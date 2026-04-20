@@ -1,0 +1,6 @@
+@HrmApp.API_HostAddress = http://localhost:5045
+
+GET {{HrmApp.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
