@@ -16,7 +16,7 @@ public class EmployeeDto
     [StringLength(250)]
     public string? EmployeeNameBangla { get; set; }
 
-    public byte[]? EmployeeImage { get; set; }
+    public string? EmployeeImage { get; set; }
 
     [StringLength(250)]
     public string? FatherName { get; set; }
@@ -73,4 +73,12 @@ public class EmployeeDto
 
     [StringLength(50)]
     public string? CreatedBy { get; set; }
+
+    public virtual ICollection<EmployeeDocumentDto> EmployeeDocuments { get; set; } = new List<EmployeeDocumentDto>();
+
+    public virtual ICollection<EmployeeEducationInfoDto> EmployeeEducationInfos { get; set; } = new List<EmployeeEducationInfoDto>();
+
+    public virtual ICollection<EmployeeFamilyInfoDto> EmployeeFamilyInfos { get; set; } = new List<EmployeeFamilyInfoDto>();
+
+    public virtual ICollection<EmployeeProfessionalCertificationDto> EmployeeProfessionalCertifications { get; set; } = new List<EmployeeProfessionalCertificationDto>();
 }

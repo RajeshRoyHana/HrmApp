@@ -5,6 +5,9 @@ namespace HrmApp.Repositories.Interfaces
 {
     public interface IEmployeeRepository 
     {
-        Task<IList<EmployeeListDto>> GetEmployeeListByClientId(int clientId);
+        Task<List<EmployeeListDto>> GetEmployeeListByClientId(int clientId);
+        Task<int> CreateAsync(Employee employee);
+        Task<Employee?> GetByIdAsync(int id);
+        Task<bool> DeleteEmployee(int id);
     }
 }

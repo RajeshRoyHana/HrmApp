@@ -23,18 +23,47 @@ namespace HrmApp.API.Controllers
             return Ok(employees);
         }
 
-        //[HttpGet("{id}")]
-        //public async Task<ActionResult<EmployeeDto>> GetById(int id)
-        //{
-        //    var employee = await _employeeService.GetByIdAsync(id);
+        [HttpGet("details/{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var employee = await _employeeService.GetEmployeeAsync(id);
 
-        //    if (employee == null)
-        //    {
-        //        return NotFound(new { message = $"Employee with id {id} not found" });
-        //    }
+            if (employee == null)
+                return NotFound();
 
-        //    return Ok(employee);
-        //}
+            return Ok(employee);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] EmployeeDto dto)
+        {
+            if (dto.IdClient <= 0)
+            {
+                return BadRequest(new
+                {
+                    Message = "Client is required."
+                });
+            }
+
+            var id = await _employeeService.CreateEmployeeAsync(dto);
+
+            return Ok(new { EmployeeId = id });
+        }
+
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var deleted =
+                await _employeeService.DeleteEmployee(id);
+
+            if (!deleted)
+                return NotFound();
+
+            return Ok(new { Message = "Employee deactivated successfully" });
+        }
+
 
     }
 }

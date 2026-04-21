@@ -17,11 +17,11 @@ namespace HrmApp.API.Extensions
             services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
-            // Register AutoMapper
-            services.AddAutoMapper(cfg =>{},typeof(MappingProfile).Assembly);
-
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+
+            services.AddScoped<ICommonService, CommonService>();
+            services.AddScoped<ICommonRepository, CommonRepository>();
 
 
             return services;

@@ -1,9 +1,9 @@
 ﻿using HrmApp.Models.Entities;
 using HrmApp.Shared.Dtos;
 
-namespace HrmApp.Repositories.Interfaces
+namespace HrmApp.Services.Interfaces
 {
-    public interface ICommonRepository
+    public interface ICommonService
     {
         Task<List<DropdownDto>> GetDepartmentsAsync(int clientId);
         Task<List<DropdownDto>> GetDesignationsAsync(int clientId);
