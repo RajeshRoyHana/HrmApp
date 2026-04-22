@@ -26,15 +26,15 @@ namespace HrmApp.Repositories
 
         public async Task<List<EmployeeListDto>> GetEmployeeListByClientId(int clientId, CancellationToken cancellationToken)
         {
-
+          
             return await _context.Employees
                 .AsNoTracking()
                 .Where(c => c.IdClient == clientId && c.IsActive == true)
                 .Include(d => d.Designation)
                 .Select(s => new EmployeeListDto
                 {
-                    Id = s.IdClient,
-                    ClientId = s.Id,
+                    Id = s.Id,
+                    ClientId = s.IdClient,
                     EmployeeName = s.EmployeeName,
                     DesignationName = s.Designation != null ? s.Designation.DesignationName : "N/A"
                 }).ToListAsync(cancellationToken);
@@ -43,7 +43,7 @@ namespace HrmApp.Repositories
 
         public async Task<int> CreateAsync(Employee employee, CancellationToken cancellationToken)
         {
-             _context.Employees.Add(employee);
+            _context.Employees.Add(employee);
             await SaveChangesAsync(cancellationToken);
             return employee.Id;
         }

@@ -23,14 +23,14 @@ namespace HrmApp.API.Controllers
         }
 
         [HttpGet("details")]
-        public async Task<IActionResult> GetById([FromQuery] int clientId, [FromQuery] int id, CancellationToken cancellationToken)
+        public async Task<ActionResult<EmployeeDto>> GetById([FromQuery] int clientId, [FromQuery] int id, CancellationToken cancellationToken)
         {
             var employee = await _employeeService.GetEmployeeAsync(clientId, id, cancellationToken);
 
             if (employee == null)
                 return NotFound();
 
-            return Ok(employee);
+            return employee;
         }
 
 
@@ -60,8 +60,7 @@ namespace HrmApp.API.Controllers
             if (dto.IdClient != clientId || dto.Id != id)
                 return BadRequest("Mismatched ids.");
 
-            var updated = await _employeeService
-                .UpdateEmployeeAsync(dto, cancellationToken);
+            var updated = await _employeeService.UpdateEmployeeAsync(dto, cancellationToken);
 
             if (!updated)
                 return NotFound();
@@ -73,8 +72,7 @@ namespace HrmApp.API.Controllers
         [HttpDelete]
         public async Task<IActionResult> Delete([FromQuery] int clientId, [FromQuery] int id, CancellationToken cancellationToken)
         {
-            var deleted =
-                await _employeeService.DeleteEmployee(clientId, id, cancellationToken);
+            var deleted = await _employeeService.DeleteEmployee(clientId, id, cancellationToken);
 
             if (!deleted)
                 return NotFound();
