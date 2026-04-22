@@ -12,7 +12,7 @@ namespace HrmApp.Repositories
         {
             _context = context;
         }
-        public async Task<List<DropdownDto>> EducationExaminationsAsync(int clientId)
+        public async Task<List<DropdownDto>> EducationExaminationsAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.EducationExaminations
                                  .AsNoTracking()
@@ -22,10 +22,10 @@ namespace HrmApp.Repositories
                                      Value = d.Id,
                                      Text = d.ExamName
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<DropdownDto>> EducationLevelsAsync(int clientId)
+        public async Task<List<DropdownDto>> EducationLevelsAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.EducationLevels
                                  .AsNoTracking()
@@ -35,10 +35,10 @@ namespace HrmApp.Repositories
                                      Value = s.Id,
                                      Text = s.EducationLevelName
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<DropdownDto>> GetDepartmentsAsync(int clientId)
+        public async Task<List<DropdownDto>> GetDepartmentsAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.Departments
                                  .AsNoTracking()
@@ -48,10 +48,10 @@ namespace HrmApp.Repositories
                                      Value = s.Id,
                                      Text = s.DepartName
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<DropdownDto>> GetDesignationsAsync(int clientId)
+        public async Task<List<DropdownDto>> GetDesignationsAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.Designations
                                  .AsNoTracking()
@@ -62,10 +62,10 @@ namespace HrmApp.Repositories
                                      Text = s.DesignationName
 
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<DropdownDto>> GetEmployeeTypesAsync(int clientId)
+        public async Task<List<DropdownDto>> GetEmployeeTypesAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.EmployeeTypes
                                   .AsNoTracking()
@@ -75,10 +75,10 @@ namespace HrmApp.Repositories
                                      Value = s.Id,
                                      Text = s.TypeName
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<DropdownDto>> GetGendersAsync(int clientId)
+        public async Task<List<DropdownDto>> GetGendersAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.Genders
                                  .AsNoTracking()
@@ -88,10 +88,10 @@ namespace HrmApp.Repositories
                                      Value = s.Id,
                                      Text = s.GenderName
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<DropdownDto>> GetJobTypesAsync(int clientId)
+        public async Task<List<DropdownDto>> GetJobTypesAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.JobTypes
                                  .AsNoTracking()
@@ -101,10 +101,10 @@ namespace HrmApp.Repositories
                                      Value = s.Id,
                                      Text = s.JobTypeName
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<DropdownDto>> GetMaritalStatusesAsync(int clientId)
+        public async Task<List<DropdownDto>> GetMaritalStatusesAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.MaritalStatuses
                                  .AsNoTracking()
@@ -114,10 +114,10 @@ namespace HrmApp.Repositories
                                      Value = s.Id,
                                      Text = s.MaritalStatusName
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<DropdownDto>> GetReligionsAsync(int clientId)
+        public async Task<List<DropdownDto>> GetReligionsAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.Religions
                                  .AsNoTracking()
@@ -127,10 +127,10 @@ namespace HrmApp.Repositories
                                      Value = s.Id,
                                      Text = s.ReligionName
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<DropdownDto>> GetSectionsAsync(int clientId)
+        public async Task<List<DropdownDto>> GetSectionsAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.Sections
                                  .AsNoTracking()
@@ -141,10 +141,10 @@ namespace HrmApp.Repositories
                                      Text = s.SectionName
 
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<DropdownDto>> GetWeeekOffsAsync(int clientId)
+        public async Task<List<DropdownDto>> GetWeeekOffsAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.WeekOffs
                                  .AsNoTracking()
@@ -154,10 +154,10 @@ namespace HrmApp.Repositories
                                      Value = s.Id,
                                      Text = s.WeekOffDay
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<DropdownDto>> RelationshipsAsync(int clientId)
+        public async Task<List<DropdownDto>> RelationshipsAsync(int clientId, CancellationToken cancellationToken)
         {
             return await _context.Relationships
                                  .AsNoTracking()
@@ -167,7 +167,7 @@ namespace HrmApp.Repositories
                                      Value = s.Id,
                                      Text = s.RelationName
                                  })
-                                 .ToListAsync();
+                                 .ToListAsync(cancellationToken);
         }
 
     }

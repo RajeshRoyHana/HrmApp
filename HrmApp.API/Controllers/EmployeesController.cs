@@ -2,7 +2,6 @@
 using HrmApp.Shared.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace HrmApp.API.Controllers
 {
@@ -16,17 +15,17 @@ namespace HrmApp.API.Controllers
             _employeeService = employeeService;
         }
 
-        [HttpGet("{clientId}")]
-        public async Task<ActionResult<List<EmployeeListDto>>> GetAll(int clientId)
+        [HttpGet]
+        public async Task<ActionResult<List<EmployeeListDto>>> GetAll([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var employees = await _employeeService.GetEmployeeListByClientId(clientId);
+            var employees = await _employeeService.GetEmployeeListByClientId(clientId, cancellationToken);
             return Ok(employees);
         }
 
-        [HttpGet("details/{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("details")]
+        public async Task<IActionResult> GetById([FromQuery] int clientId, [FromQuery] int id, CancellationToken cancellationToken)
         {
-            var employee = await _employeeService.GetEmployeeAsync(id);
+            var employee = await _employeeService.GetEmployeeAsync(clientId, id, cancellationToken);
 
             if (employee == null)
                 return NotFound();
@@ -36,7 +35,7 @@ namespace HrmApp.API.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] EmployeeDto dto)
+        public async Task<IActionResult> Create([FromBody] EmployeeDto dto, CancellationToken cancellationToken)
         {
             if (dto.IdClient <= 0)
             {
@@ -46,17 +45,36 @@ namespace HrmApp.API.Controllers
                 });
             }
 
-            var id = await _employeeService.CreateEmployeeAsync(dto);
+            var id = await _employeeService.CreateEmployeeAsync(dto, cancellationToken);
 
             return Ok(new { EmployeeId = id });
         }
 
 
+        [HttpPut]
+        public async Task<IActionResult> Update(int clientId, int id, [FromBody] EmployeeDto dto, CancellationToken cancellationToken)
+        {
+            if (clientId <= 0 || id <= 0)
+                return BadRequest("Invalid client or employee id.");
+
+            if (dto.IdClient != clientId || dto.Id != id)
+                return BadRequest("Mismatched ids.");
+
+            var updated = await _employeeService
+                .UpdateEmployeeAsync(dto, cancellationToken);
+
+            if (!updated)
+                return NotFound();
+
+            return Ok(new { Message = "Employee updated successfully" });
+        }
+
+
         [HttpDelete]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete([FromQuery] int clientId, [FromQuery] int id, CancellationToken cancellationToken)
         {
             var deleted =
-                await _employeeService.DeleteEmployee(id);
+                await _employeeService.DeleteEmployee(clientId, id, cancellationToken);
 
             if (!deleted)
                 return NotFound();

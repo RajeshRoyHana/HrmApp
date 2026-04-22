@@ -13,87 +13,87 @@ namespace HrmApp.API.Controllers
         {
             _commonService = commonService;
         }
-        [HttpGet("departmentdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> DepartmentDropDown(int clientId)
+        [HttpGet("departmentdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> DepartmentDropDown([FromQuery] int clientId,CancellationToken cancellationToken)
         {
-            var data = await _commonService.GetDepartmentsAsync(clientId);
+            var data = await _commonService.GetDepartmentsAsync(clientId, cancellationToken);
             return Ok(data);
         }
 
-        [HttpGet("educationlevelsdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> EducationLevelsDropDown(int clientId)
+        [HttpGet("educationlevelsdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> EducationLevelsDropDown([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var data = await _commonService.EducationLevelsAsync(clientId);
+            var data = await _commonService.EducationLevelsAsync(clientId, cancellationToken);
             return Ok(data);
         }
 
-        [HttpGet("designationdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> DesignationDropDown(int clientId)
+        [HttpGet("designationdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> DesignationDropDown([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var data = await _commonService.GetDesignationsAsync(clientId);
+            var data = await _commonService.GetDesignationsAsync(clientId, cancellationToken);
             return Ok(data);
         }
 
-        [HttpGet("employeetypesdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> EmployeeTypesDropDown(int clientId)
+        [HttpGet("employeetypesdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> EmployeeTypesDropDown([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var data = await _commonService.GetEmployeeTypesAsync(clientId);
+            var data = await _commonService.GetEmployeeTypesAsync(clientId, cancellationToken);
             return Ok(data);
         }
 
-        [HttpGet("gendersdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> GendersDropDown(int clientId)
+        [HttpGet("gendersdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> GendersDropDown([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var data = await _commonService.GetGendersAsync(clientId);
+            var data = await _commonService.GetGendersAsync(clientId, cancellationToken);
             return Ok(data);
         }
 
-        [HttpGet("jobtypesdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> JobTypesDropDown(int clientId)
+        [HttpGet("jobtypesdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> JobTypesDropDown([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var data = await _commonService.GetJobTypesAsync(clientId);
+            var data = await _commonService.GetJobTypesAsync(clientId, cancellationToken);
             return Ok(data);
         }
 
-        [HttpGet("maritalstatusesdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> MaritalStatusesDropDown(int clientId)
+        [HttpGet("maritalstatusesdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> MaritalStatusesDropDown([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var data = await _commonService.GetMaritalStatusesAsync(clientId);
+            var data = await _commonService.GetMaritalStatusesAsync(clientId, cancellationToken);
             return Ok(data);
         }
 
-        [HttpGet("religionsdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> ReligionsDropDown(int clientId)
+        [HttpGet("religionsdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> ReligionsDropDown([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var data = await _commonService.GetReligionsAsync(clientId);
+            var data = await _commonService.GetReligionsAsync(clientId, cancellationToken);
             return Ok(data);
         }
 
-        [HttpGet("sectionsdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> SectionsDropDown(int clientId)
+        [HttpGet("sectionsdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> SectionsDropDown([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var data = await _commonService.GetSectionsAsync(clientId);
+            var data = await _commonService.GetSectionsAsync(clientId, cancellationToken);
             return Ok(data);
         }
 
-        [HttpGet("weekoffsdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> WeekOffsDropDown(int clientId)
+        [HttpGet("weekoffsdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> WeekOffsDropDown([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var data = await _commonService.GetWeeekOffsAsync(clientId);
+            var data = await _commonService.GetWeeekOffsAsync(clientId, cancellationToken);
             return Ok(data);
         }
 
-        [HttpGet("relationshipsdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> RelationshipsDropDown(int clientId)
+        [HttpGet("relationshipsdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> RelationshipsDropDown([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var data = await _commonService.RelationshipsAsync(clientId);
+            var data = await _commonService.RelationshipsAsync(clientId, cancellationToken);
             return Ok(data);
         }
 
-        [HttpGet("educationexaminationsdropdown/{clientId}")]
-        public async Task<ActionResult<List<DropdownDto>>> EducationExaminationsDropDown(int clientId)
+        [HttpGet("educationexaminationsdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> EducationExaminationsDropDown([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var data = await _commonService.EducationExaminationsAsync(clientId);
+            var data = await _commonService.EducationExaminationsAsync(clientId, cancellationToken);
             return Ok(data);
         }
     }

@@ -12,64 +12,64 @@ namespace HrmApp.Services
         {
             _repository = repository;
         }
-        public async Task<List<DropdownDto>> EducationExaminationsAsync(int clientId)
+        public async Task<List<DropdownDto>> EducationExaminationsAsync(int clientId, CancellationToken cancellationToken)
         {
-            return await _repository.EducationExaminationsAsync(clientId);
+            return await _repository.EducationExaminationsAsync(clientId, cancellationToken);
         }
 
-        public Task<List<DropdownDto>> EducationLevelsAsync(int clientId)
+        public Task<List<DropdownDto>> EducationLevelsAsync(int clientId, CancellationToken cancellationToken)
         {
-            return _repository.EducationLevelsAsync(clientId);
+            return _repository.EducationLevelsAsync(clientId, cancellationToken);
         }
 
-        public Task<List<DropdownDto>> GetDepartmentsAsync(int clientId)
+        public Task<List<DropdownDto>> GetDepartmentsAsync(int clientId, CancellationToken cancellationToken)
         {
-            return _repository.GetDepartmentsAsync(clientId);
+            return _repository.GetDepartmentsAsync(clientId, cancellationToken);
         }
 
-        public Task<List<DropdownDto>> GetDesignationsAsync(int clientId)
+        public Task<List<DropdownDto>> GetDesignationsAsync(int clientId, CancellationToken cancellationToken)
         {
-            return _repository.GetDesignationsAsync(clientId);
+            return _repository.GetDesignationsAsync(clientId, cancellationToken);
         }
 
-        public Task<List<DropdownDto>> GetEmployeeTypesAsync(int clientId)
+        public Task<List<DropdownDto>> GetEmployeeTypesAsync(int clientId, CancellationToken cancellationToken)
         {
-            return _repository.GetEmployeeTypesAsync(clientId);
+            return _repository.GetEmployeeTypesAsync(clientId, cancellationToken);
         }
 
-        public Task<List<DropdownDto>> GetGendersAsync(int clientId)
+        public Task<List<DropdownDto>> GetGendersAsync(int clientId, CancellationToken cancellationToken)
         {
-            return _repository.GetGendersAsync(clientId);
+            return _repository.GetGendersAsync(clientId, cancellationToken);
         }
 
-        public Task<List<DropdownDto>> GetJobTypesAsync(int clientId)
+        public Task<List<DropdownDto>> GetJobTypesAsync(int clientId, CancellationToken cancellationToken)
         {
-            return _repository.GetJobTypesAsync(clientId);
+            return _repository.GetJobTypesAsync(clientId, cancellationToken);
         }
 
-        public Task<List<DropdownDto>> GetMaritalStatusesAsync(int clientId)
+        public Task<List<DropdownDto>> GetMaritalStatusesAsync(int clientId,CancellationToken cancellationToken)
         {
-            return _repository.GetMaritalStatusesAsync(clientId);
+            return _repository.GetMaritalStatusesAsync(clientId, cancellationToken);
         }
 
-        public Task<List<DropdownDto>> GetReligionsAsync(int clientId)
+        public Task<List<DropdownDto>> GetReligionsAsync(int clientId, CancellationToken cancellationToken)
         {
-            return _repository.GetReligionsAsync(clientId);
+            return _repository.GetReligionsAsync(clientId, cancellationToken);
         }
 
-        public Task<List<DropdownDto>> GetSectionsAsync(int clientId)
+        public Task<List<DropdownDto>> GetSectionsAsync(int clientId, CancellationToken cancellationToken)
         {
-            return _repository.GetSectionsAsync(clientId);
+            return _repository.GetSectionsAsync(clientId, cancellationToken);
         }
 
-        public Task<List<DropdownDto>> GetWeeekOffsAsync(int clientId)
+        public Task<List<DropdownDto>> GetWeeekOffsAsync(int clientId,CancellationToken cancellationToken)
         {
-            return _repository.GetWeeekOffsAsync(clientId);
+            return _repository.GetWeeekOffsAsync(clientId, cancellationToken);
         }
 
-        public Task<List<DropdownDto>> RelationshipsAsync(int clientId)
+        public Task<List<DropdownDto>> RelationshipsAsync(int clientId, CancellationToken cancellationToken)
         {
-            return _repository.RelationshipsAsync(clientId);
+            return _repository.RelationshipsAsync(clientId, cancellationToken);
         }
     }
 }

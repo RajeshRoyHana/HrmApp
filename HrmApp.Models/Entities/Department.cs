@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace HrmApp.Models.Entities;
+﻿namespace HrmApp.Models.Entities;
 
 public partial class Department
 {

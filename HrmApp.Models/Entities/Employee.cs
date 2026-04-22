@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace HrmApp.Models.Entities;
 
-namespace HrmApp.Models.Entities;
-
-public  class Employee
+public class Employee
 {
     public int IdClient { get; set; }
 

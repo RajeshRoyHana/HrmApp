@@ -14,13 +14,13 @@ namespace HrmApp.Services
             _repository = repository;
         }
 
-        public async Task<IList<EmployeeListDto>> GetEmployeeListByClientId(int clientId)
+        public async Task<IList<EmployeeListDto>> GetEmployeeListByClientId(int clientId, CancellationToken cancellationToken)
         {
-            return await _repository.GetEmployeeListByClientId(clientId);
+            return await _repository.GetEmployeeListByClientId(clientId, cancellationToken);
         }
-        public async Task<EmployeeDto?> GetEmployeeAsync(int id)
+        public async Task<EmployeeDto?> GetEmployeeAsync(int clientId, int id, CancellationToken cancellationToken)
         {
-            var employee = await _repository.GetByIdAsync(id);
+            var employee = await _repository.GetByIdAsync(clientId, id, cancellationToken);
 
             if (employee == null)
                 return null;
@@ -127,7 +127,7 @@ namespace HrmApp.Services
             };
         }
 
-        public async Task<int> CreateEmployeeAsync(EmployeeDto dto)
+        public async Task<int> CreateEmployeeAsync(EmployeeDto dto, CancellationToken cancellationToken)
         {
             // Employee 
             var employee = new Employee
@@ -241,15 +241,162 @@ namespace HrmApp.Services
                         }).ToList();
             }
 
-            return await _repository.CreateAsync(employee);
+            return await _repository.CreateAsync(employee, cancellationToken);
         }
 
-        public async Task<bool> DeleteEmployee(int id)
+        public async Task<bool> UpdateEmployeeAsync(EmployeeDto dto, CancellationToken cancellationToken)
+        {
+            if (dto.IdClient <= 0 || dto.Id <= 0)
+                throw new ArgumentException("Invalid client or employee id.");
+
+            var employee = await _repository.GetByIdAsync(dto.IdClient, dto.Id, cancellationToken);
+
+            if (employee == null)
+                return false;
+
+
+            employee.EmployeeName = dto.EmployeeName;
+            employee.EmployeeNameBangla = dto.EmployeeNameBangla;
+            employee.FatherName = dto.FatherName;
+            employee.MotherName = dto.MotherName;
+            employee.EmployeeImage = !string.IsNullOrEmpty(dto.EmployeeImage) ? Convert.FromBase64String(dto.EmployeeImage) : null;
+            employee.IdReportingManager = dto.IdReportingManager;
+            employee.IdJobType = dto.IdJobType;
+            employee.IdEmployeeType = dto.IdEmployeeType;
+            employee.BirthDate = dto.BirthDate;
+            employee.JoiningDate = dto.JoiningDate;
+            employee.IdGender = dto.IdGender;
+            employee.IdReligion = dto.IdReligion;
+            employee.IdDepartment = dto.IdDepartment;
+            employee.IdSection = dto.IdSection;
+            employee.IdDesignation = dto.IdDesignation;
+            employee.HasOvertime = dto.HasOvertime;
+            employee.HasAttendenceBonus = dto.HasAttendenceBonus;
+            employee.IdWeekOff = dto.IdWeekOff;
+            employee.Address = dto.Address;
+            employee.PresentAddress = dto.PresentAddress;
+            employee.ContactNo = dto.ContactNo;
+            employee.IdMaritalStatus = dto.IdMaritalStatus;
+            employee.IsActive = dto.IsActive ?? employee.IsActive;
+            employee.SetDate = DateTime.UtcNow;
+            employee.CreatedBy = dto.CreatedBy;
+
+
+
+
+            if (employee.EmployeeDocuments.Any())
+            {
+                await _repository.RemoveEmployeeDocumentsAsync(employee.EmployeeDocuments, cancellationToken);
+            }
+            if (dto.EmployeeDocuments?.Any() == true)
+            {
+                foreach (var doc in dto.EmployeeDocuments)
+                {
+                    employee.EmployeeDocuments.Add(new EmployeeDocument
+                    {
+                        IdClient = dto.IdClient,
+                        DocumentName = doc.DocumentName,
+                        FileName = doc.FileName,
+                        UploadedFile = !string.IsNullOrEmpty(doc.UploadedFile) ? Convert.FromBase64String(doc.UploadedFile) : null,
+                        UploadedFileExtention = doc.UploadedFileExtention,
+                        UploadDate = DateTime.UtcNow,
+                        SetDate = DateTime.UtcNow
+                    });
+                }
+            }
+
+
+            if (employee.EmployeeEducationInfos.Any())
+            {
+                await _repository.RemoveEmployeeEducationInfosAsync(employee.EmployeeEducationInfos, cancellationToken);
+            }
+
+            if (dto.EmployeeEducationInfos?.Any() == true)
+            {
+                foreach (var edu in dto.EmployeeEducationInfos)
+                {
+                    employee.EmployeeEducationInfos.Add(
+                        new EmployeeEducationInfo
+                        {
+                            IdClient = dto.IdClient,
+                            IdEducationLevel = edu.IdEducationLevel,
+                            IdEducationExamination = edu.IdEducationExamination,
+                            IdEducationResult = edu.IdEducationResult,
+                            Cgpa = edu.Cgpa,
+                            ExamScale = edu.ExamScale,
+                            Marks = edu.Marks,
+                            Major = edu.Major,
+                            PassingYear = edu.PassingYear,
+                            InstituteName = edu.InstituteName,
+                            IsForeignInstitute = edu.IsForeignInstitute,
+                            Duration = edu.Duration,
+                            Achievement = edu.Achievement,
+                            SetDate = DateTime.UtcNow
+                        });
+                }
+            }
+
+            if (employee.EmployeeFamilyInfos.Any())
+            {
+                await _repository.RemoveEmployeeFamilyInfosAsync(employee.EmployeeFamilyInfos, cancellationToken);
+            }
+            if (dto.EmployeeFamilyInfos?.Any() == true)
+            {
+                foreach (var fam in dto.EmployeeFamilyInfos)
+                {
+                    employee.EmployeeFamilyInfos.Add(
+                        new EmployeeFamilyInfo
+                        {
+                            IdClient = dto.IdClient,
+                            Name = fam.Name,
+                            IdGender = fam.IdGender,
+                            IdEmployee = fam.IdEmployee,
+                            IdRelationship = fam.IdRelationship,
+                            DateOfBirth = fam.DateOfBirth,
+                            ContactNo = fam.ContactNo,
+                            CurrentAddress = fam.CurrentAddress,
+                            PermanentAddress = fam.PermanentAddress,
+                            SetDate = DateTime.UtcNow,
+                            CreatedBy = fam.CreatedBy
+                        });
+                }
+            }
+
+            if (employee.EmployeeProfessionalCertifications.Any())
+            {
+                await _repository.RemoveEmployeeProfessionalCertificationsAsync(employee.EmployeeProfessionalCertifications, cancellationToken);
+            }
+            if (dto.EmployeeProfessionalCertifications?.Any() == true)
+            {
+                foreach (var cert in dto.EmployeeProfessionalCertifications)
+                {
+                    employee.EmployeeProfessionalCertifications.Add(
+                        new EmployeeProfessionalCertification
+                        {
+                            IdClient = dto.IdClient,
+                            CertificationTitle = cert.CertificationTitle,
+                            CertificationInstitute =
+                                cert.CertificationInstitute,
+                            InstituteLocation = cert.InstituteLocation,
+                            FromDate = cert.FromDate,
+                            ToDate = cert.ToDate,
+                            SetDate = DateTime.UtcNow,
+                            CreatedBy = cert.CreatedBy
+                        });
+                }
+            }
+
+            await _repository.SaveChangesAsync(cancellationToken);
+
+            return true;
+        }
+
+        public async Task<bool> DeleteEmployee(int clientId, int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
                 throw new ArgumentException("Invalid id");
 
-            return await _repository.DeleteEmployee(id);
+            return await _repository.DeleteEmployee(clientId, id, cancellationToken);
         }
 
     }
