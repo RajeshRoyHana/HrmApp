@@ -14,9 +14,9 @@ namespace HrmApp.Services
             _repository = repository;
         }
 
-        public async Task<IList<EmployeeListDto>> GetEmployeeListByClientId(int clientId, CancellationToken cancellationToken)
+        public async Task<IList<EmployeeListDto>> GetEmployeeListAsync(int clientId, CancellationToken cancellationToken)
         {
-            return await _repository.GetEmployeeListByClientId(clientId, cancellationToken);
+            return await _repository.GetEmployeeListAsync(clientId, cancellationToken);
         }
         public async Task<EmployeeDto?> GetEmployeeAsync(int clientId, int id, CancellationToken cancellationToken)
         {
@@ -286,7 +286,7 @@ namespace HrmApp.Services
 
             if (employee.EmployeeDocuments.Any())
             {
-                await _repository.RemoveEmployeeDocumentsAsync(employee.EmployeeDocuments, cancellationToken);
+                 _repository.RemoveEmployeeDocuments(employee.EmployeeDocuments);
             }
             if (dto.EmployeeDocuments?.Any() == true)
             {
@@ -308,7 +308,7 @@ namespace HrmApp.Services
 
             if (employee.EmployeeEducationInfos.Any())
             {
-                await _repository.RemoveEmployeeEducationInfosAsync(employee.EmployeeEducationInfos, cancellationToken);
+                 _repository.RemoveEmployeeEducationInfos(employee.EmployeeEducationInfos);
             }
 
             if (dto.EmployeeEducationInfos?.Any() == true)
@@ -338,7 +338,7 @@ namespace HrmApp.Services
 
             if (employee.EmployeeFamilyInfos.Any())
             {
-                await _repository.RemoveEmployeeFamilyInfosAsync(employee.EmployeeFamilyInfos, cancellationToken);
+                 _repository.RemoveEmployeeFamilyInfos(employee.EmployeeFamilyInfos);
             }
             if (dto.EmployeeFamilyInfos?.Any() == true)
             {
@@ -364,7 +364,7 @@ namespace HrmApp.Services
 
             if (employee.EmployeeProfessionalCertifications.Any())
             {
-                await _repository.RemoveEmployeeProfessionalCertificationsAsync(employee.EmployeeProfessionalCertifications, cancellationToken);
+                _repository.RemoveEmployeeProfessionalCertifications(employee.EmployeeProfessionalCertifications);
             }
             if (dto.EmployeeProfessionalCertifications?.Any() == true)
             {
@@ -391,12 +391,12 @@ namespace HrmApp.Services
             return true;
         }
 
-        public async Task<bool> DeleteEmployee(int clientId, int id, CancellationToken cancellationToken)
+        public async Task<bool> DeleteEmployeeAsync(int clientId, int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
                 throw new ArgumentException("Invalid id");
 
-            return await _repository.DeleteEmployee(clientId, id, cancellationToken);
+            return await _repository.DeleteEmployeeAsync(clientId, id, cancellationToken);
         }
 
     }

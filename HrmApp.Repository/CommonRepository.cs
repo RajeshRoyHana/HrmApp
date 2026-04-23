@@ -21,8 +21,7 @@ namespace HrmApp.Repositories
                                  {
                                      Value = d.Id,
                                      Text = d.ExamName
-                                 })
-                                 .ToListAsync(cancellationToken);
+                                 }).ToListAsync(cancellationToken);
         }
 
         public async Task<List<DropdownDto>> EducationLevelsAsync(int clientId, CancellationToken cancellationToken)
@@ -34,8 +33,7 @@ namespace HrmApp.Repositories
                                  {
                                      Value = s.Id,
                                      Text = s.EducationLevelName
-                                 })
-                                 .ToListAsync(cancellationToken);
+                                 }).ToListAsync(cancellationToken);
         }
 
         public async Task<List<DropdownDto>> GetDepartmentsAsync(int clientId, CancellationToken cancellationToken)
@@ -47,8 +45,7 @@ namespace HrmApp.Repositories
                                  {
                                      Value = s.Id,
                                      Text = s.DepartName
-                                 })
-                                 .ToListAsync(cancellationToken);
+                                 }).ToListAsync(cancellationToken);
         }
 
         public async Task<List<DropdownDto>> GetDesignationsAsync(int clientId, CancellationToken cancellationToken)
@@ -61,8 +58,7 @@ namespace HrmApp.Repositories
                                      Value = s.Id,
                                      Text = s.DesignationName
 
-                                 })
-                                 .ToListAsync(cancellationToken);
+                                 }).ToListAsync(cancellationToken);
         }
 
         public async Task<List<DropdownDto>> GetEmployeeTypesAsync(int clientId, CancellationToken cancellationToken)
@@ -74,8 +70,7 @@ namespace HrmApp.Repositories
                                  {
                                      Value = s.Id,
                                      Text = s.TypeName
-                                 })
-                                 .ToListAsync(cancellationToken);
+                                 }).ToListAsync(cancellationToken);
         }
 
         public async Task<List<DropdownDto>> GetGendersAsync(int clientId, CancellationToken cancellationToken)

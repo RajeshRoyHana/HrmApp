@@ -18,12 +18,12 @@ namespace HrmApp.API.Controllers
         [HttpGet]
         public async Task<ActionResult<List<EmployeeListDto>>> GetAll([FromQuery] int clientId, CancellationToken cancellationToken)
         {
-            var employees = await _employeeService.GetEmployeeListByClientId(clientId, cancellationToken);
+            var employees = await _employeeService.GetEmployeeListAsync(clientId, cancellationToken);
             return Ok(employees);
         }
 
         [HttpGet("details")]
-        public async Task<ActionResult<EmployeeDto>> GetById([FromQuery] int clientId, [FromQuery] int id, CancellationToken cancellationToken)
+        public async Task<ActionResult<EmployeeDto>> Get([FromQuery] int clientId, [FromQuery] int id, CancellationToken cancellationToken)
         {
             var employee = await _employeeService.GetEmployeeAsync(clientId, id, cancellationToken);
 
@@ -52,7 +52,7 @@ namespace HrmApp.API.Controllers
 
 
         [HttpPut]
-        public async Task<IActionResult> Update(int clientId, int id, [FromBody] EmployeeDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> Update([FromQuery] int clientId, int id, [FromBody] EmployeeDto dto, CancellationToken cancellationToken)
         {
             if (clientId <= 0 || id <= 0)
                 return BadRequest("Invalid client or employee id.");
@@ -72,7 +72,7 @@ namespace HrmApp.API.Controllers
         [HttpDelete]
         public async Task<IActionResult> Delete([FromQuery] int clientId, [FromQuery] int id, CancellationToken cancellationToken)
         {
-            var deleted = await _employeeService.DeleteEmployee(clientId, id, cancellationToken);
+            var deleted = await _employeeService.DeleteEmployeeAsync(clientId, id, cancellationToken);
 
             if (!deleted)
                 return NotFound();

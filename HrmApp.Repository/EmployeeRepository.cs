@@ -13,6 +13,22 @@ namespace HrmApp.Repositories
         {
             _context = context;
         }
+        public async Task<List<EmployeeListDto>> GetEmployeeListAsync(int clientId, CancellationToken cancellationToken)
+        {
+
+            return await _context.Employees
+                .AsNoTracking()
+                .Where(c => c.IdClient == clientId && c.IsActive == true)
+                .Select(s => new EmployeeListDto
+                {
+                    Id = s.Id,
+                    ClientId = s.IdClient,
+                    EmployeeName = s.EmployeeName,
+                    DesignationName = s.Designation != null ? s.Designation.DesignationName : "N/A"
+                }).ToListAsync(cancellationToken);
+
+        }
+
         public async Task<Employee?> GetByIdAsync(int clientId, int id,CancellationToken cancellationToken)
         {
             return await _context.Employees
@@ -24,23 +40,7 @@ namespace HrmApp.Repositories
                 .FirstOrDefaultAsync(e => e.Id == id && e.IdClient == clientId, cancellationToken);
         }
 
-        public async Task<List<EmployeeListDto>> GetEmployeeListByClientId(int clientId, CancellationToken cancellationToken)
-        {
-          
-            return await _context.Employees
-                .AsNoTracking()
-                .Where(c => c.IdClient == clientId && c.IsActive == true)
-                .Include(d => d.Designation)
-                .Select(s => new EmployeeListDto
-                {
-                    Id = s.Id,
-                    ClientId = s.IdClient,
-                    EmployeeName = s.EmployeeName,
-                    DesignationName = s.Designation != null ? s.Designation.DesignationName : "N/A"
-                }).ToListAsync(cancellationToken);
-
-        }
-
+       
         public async Task<int> CreateAsync(Employee employee, CancellationToken cancellationToken)
         {
             _context.Employees.Add(employee);
@@ -48,10 +48,10 @@ namespace HrmApp.Repositories
             return employee.Id;
         }
 
-        public async Task<bool> DeleteEmployee(int clientId,int id,CancellationToken cancellationToken)
+        public async Task<bool> DeleteEmployeeAsync(int clientId,int id,CancellationToken cancellationToken)
         {
             var employee = await _context.Employees
-                .FirstOrDefaultAsync(e => e.IdClient ==  clientId && e.Id == id, cancellationToken);
+                .FirstOrDefaultAsync(e => e.IdClient ==  clientId && e.Id == id &&  e.IsActive == true, cancellationToken);
 
             if (employee == null)
                 return false;
@@ -63,27 +63,23 @@ namespace HrmApp.Repositories
             return true;
         }
 
-        public Task RemoveEmployeeFamilyInfosAsync(IEnumerable<EmployeeFamilyInfo> familyInfos, CancellationToken cancellationToken)
+        public void RemoveEmployeeFamilyInfos(IEnumerable<EmployeeFamilyInfo> familyInfos)
         {
             _context.EmployeeFamilyInfos.RemoveRange(familyInfos);
-            return Task.CompletedTask;
         }
 
-        public Task RemoveEmployeeEducationInfosAsync(IEnumerable<EmployeeEducationInfo> employeeEducationInfo, CancellationToken cancellationToken)
+        public void RemoveEmployeeEducationInfos(IEnumerable<EmployeeEducationInfo> employeeEducationInfo)
         {
             _context.EmployeeEducationInfos.RemoveRange(employeeEducationInfo);
-            return Task.CompletedTask;
         }
-        public Task RemoveEmployeeDocumentsAsync(IEnumerable<EmployeeDocument> employeeDocuments, CancellationToken cancellationToken)
+        public void RemoveEmployeeDocuments(IEnumerable<EmployeeDocument> employeeDocuments)
         {
             _context.EmployeeDocuments.RemoveRange(employeeDocuments);
-            return Task.CompletedTask;
         }
 
-        public Task RemoveEmployeeProfessionalCertificationsAsync(IEnumerable<EmployeeProfessionalCertification> employeeProfessionalCertifications, CancellationToken cancellationToken)
+        public void RemoveEmployeeProfessionalCertifications(IEnumerable<EmployeeProfessionalCertification> employeeProfessionalCertifications)
         {
             _context.EmployeeProfessionalCertifications.RemoveRange(employeeProfessionalCertifications);
-            return Task.CompletedTask;
         }
 
         public async Task SaveChangesAsync(CancellationToken cancellationToken)
