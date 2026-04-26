@@ -32,7 +32,7 @@ namespace HrmApp.Services
             return data;
         }
 
-        public async Task<EmployeeDto?> GetEmployeeAsync( int idClient,int id, CancellationToken cancellationToken)
+        public async Task<EmployeeDto?> GetEmployeeAsync(int idClient, int id, CancellationToken cancellationToken)
         {
             var data = await _context.Employees
                 .Where(e => e.Id == id && e.IdClient == idClient)
@@ -259,12 +259,12 @@ namespace HrmApp.Services
                 .Include(e => e.EmployeeProfessionalCertifications)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync(
-                    e => e.Id == dto.Id && e.IdClient == dto.IdClient,cancellationToken);
+                    e => e.Id == dto.Id && e.IdClient == dto.IdClient,
+                    cancellationToken);
 
             if (employee == null)
                 return false;
 
-            // Update Employee scalar properties
             employee.EmployeeName = dto.EmployeeName;
             employee.EmployeeNameBangla = dto.EmployeeNameBangla;
             employee.FatherName = dto.FatherName;
@@ -291,8 +291,18 @@ namespace HrmApp.Services
             employee.IdMaritalStatus = dto.IdMaritalStatus;
             employee.IsActive = dto.IsActive ?? employee.IsActive;
 
+            // EmployeeDocuments
+            var dtoDocIds = dto.EmployeeDocuments.Where(d => d.Id > 0).Select(d => d.Id).ToHashSet();
 
-            // Update or add EmployeeDocuments
+            var docsToRemove = employee.EmployeeDocuments
+                .Where(d => !dtoDocIds.Contains(d.Id))
+                .ToList();
+
+            foreach (var doc in docsToRemove)
+            {
+                employee.EmployeeDocuments.Remove(doc);
+            }
+
             foreach (var doc in dto.EmployeeDocuments)
             {
                 var existingDoc = doc.Id > 0
@@ -307,27 +317,36 @@ namespace HrmApp.Services
                         ? Convert.FromBase64String(doc.UploadedFile)
                         : existingDoc.UploadedFile;
                     existingDoc.UploadedFileExtention = doc.UploadedFileExtention;
-
                 }
                 else
                 {
                     employee.EmployeeDocuments.Add(new EmployeeDocument
                     {
                         IdClient = dto.IdClient,
+                        IdEmployee = dto.Id,
                         DocumentName = doc.DocumentName,
                         FileName = doc.FileName,
                         UploadedFile = !string.IsNullOrEmpty(doc.UploadedFile)
                             ? Convert.FromBase64String(doc.UploadedFile)
                             : null,
                         UploadedFileExtention = doc.UploadedFileExtention,
-                        UploadDate = DateTime.UtcNow,
-
+                        UploadDate = DateTime.UtcNow
                     });
                 }
             }
 
+            // EmployeeEducationInfos
+            var dtoEduIds = dto.EmployeeEducationInfos.Where(e => e.Id > 0).Select(e => e.Id).ToHashSet();
 
-            // Update or add EducationInfos
+            var eduToRemove = employee.EmployeeEducationInfos
+                .Where(e => !dtoEduIds.Contains(e.Id))
+                .ToList();
+
+            foreach (var edu in eduToRemove)
+            {
+                employee.EmployeeEducationInfos.Remove(edu);
+            }
+
             foreach (var edu in dto.EmployeeEducationInfos)
             {
                 var existingEdu = edu.Id > 0
@@ -354,6 +373,7 @@ namespace HrmApp.Services
                     employee.EmployeeEducationInfos.Add(new EmployeeEducationInfo
                     {
                         IdClient = dto.IdClient,
+                        IdEmployee = dto.Id,
                         IdEducationLevel = edu.IdEducationLevel,
                         IdEducationExamination = edu.IdEducationExamination,
                         IdEducationResult = edu.IdEducationResult,
@@ -365,12 +385,22 @@ namespace HrmApp.Services
                         InstituteName = edu.InstituteName,
                         IsForeignInstitute = edu.IsForeignInstitute,
                         Duration = edu.Duration,
-                        Achievement = edu.Achievement,
+                        Achievement = edu.Achievement
                     });
                 }
             }
 
+            // EmployeeFamilyInfos
+            var dtoFamilyIds = dto.EmployeeFamilyInfos.Where(f => f.Id > 0).Select(f => f.Id).ToHashSet();
 
+            var familyToRemove = employee.EmployeeFamilyInfos
+                .Where(f => !dtoFamilyIds.Contains(f.Id))
+                .ToList();
+
+            foreach (var fam in familyToRemove)
+            {
+                employee.EmployeeFamilyInfos.Remove(fam);
+            }
 
             foreach (var fam in dto.EmployeeFamilyInfos)
             {
@@ -380,7 +410,6 @@ namespace HrmApp.Services
 
                 if (existingFamily != null)
                 {
-                    // Update existing family info
                     existingFamily.Name = fam.Name;
                     existingFamily.IdGender = fam.IdGender;
                     existingFamily.IdRelationship = fam.IdRelationship;
@@ -392,7 +421,6 @@ namespace HrmApp.Services
                 }
                 else
                 {
-                    // Add new family info
                     employee.EmployeeFamilyInfos.Add(new EmployeeFamilyInfo
                     {
                         IdClient = dto.IdClient,
@@ -403,22 +431,32 @@ namespace HrmApp.Services
                         DateOfBirth = fam.DateOfBirth,
                         ContactNo = fam.ContactNo,
                         CurrentAddress = fam.CurrentAddress,
-                        PermanentAddress = fam.PermanentAddress,
+                        PermanentAddress = fam.PermanentAddress
                     });
                 }
             }
 
 
+            //CERTIFICATIONS
+            var dtoCertIds = dto.EmployeeProfessionalCertifications.Where(c => c.Id > 0).Select(c => c.Id).ToHashSet();
+
+            var certsToRemove = employee.EmployeeProfessionalCertifications
+                .Where(c => !dtoCertIds.Contains(c.Id))
+                .ToList();
+
+            foreach (var cert in certsToRemove)
+            {
+                employee.EmployeeProfessionalCertifications.Remove(cert);
+            }
+
             foreach (var cert in dto.EmployeeProfessionalCertifications)
             {
                 var existingCert = cert.Id > 0
-                    ? employee.EmployeeProfessionalCertifications
-                        .FirstOrDefault(c => c.Id == cert.Id)
+                    ? employee.EmployeeProfessionalCertifications.FirstOrDefault(c => c.Id == cert.Id)
                     : null;
 
                 if (existingCert != null)
                 {
-                    // Update existing certification
                     existingCert.CertificationTitle = cert.CertificationTitle;
                     existingCert.CertificationInstitute = cert.CertificationInstitute;
                     existingCert.InstituteLocation = cert.InstituteLocation;
@@ -427,25 +465,22 @@ namespace HrmApp.Services
                 }
                 else
                 {
-                    // Add new certification
-                    employee.EmployeeProfessionalCertifications.Add(
-                        new EmployeeProfessionalCertification
-                        {
-                            IdClient = dto.IdClient,
-                            IdEmployee = dto.Id,
-                            CertificationTitle = cert.CertificationTitle,
-                            CertificationInstitute = cert.CertificationInstitute,
-                            InstituteLocation = cert.InstituteLocation,
-                            FromDate = cert.FromDate,
-                            ToDate = cert.ToDate
-                        });
+                    employee.EmployeeProfessionalCertifications.Add(new EmployeeProfessionalCertification
+                    {
+                        IdClient = dto.IdClient,
+                        IdEmployee = dto.Id,
+                        CertificationTitle = cert.CertificationTitle,
+                        CertificationInstitute = cert.CertificationInstitute,
+                        InstituteLocation = cert.InstituteLocation,
+                        FromDate = cert.FromDate,
+                        ToDate = cert.ToDate
+                    });
                 }
             }
 
             var result = await _context.SaveChangesAsync(cancellationToken);
             return result > 0;
         }
-
         public async Task<bool> DeleteEmployeeAsync(int idClient, int id, CancellationToken cancellationToken)
         {
             var employee = await _context.Employees
