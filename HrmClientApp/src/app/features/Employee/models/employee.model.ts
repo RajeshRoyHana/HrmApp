@@ -131,3 +131,10 @@ export interface EmployeeProfessionalCertification {
   setDate?: string | Date;
   createdBy?: string;
 }
+
+export interface EmployeeList {
+  id: number;
+  idClient: number;
+  employeeName?: string;   // optional (because string?)
+  designationName: string;
+}

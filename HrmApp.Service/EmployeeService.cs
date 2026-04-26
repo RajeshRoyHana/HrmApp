@@ -478,8 +478,8 @@ namespace HrmApp.Services
                 }
             }
 
-            var result = await _context.SaveChangesAsync(cancellationToken);
-            return result > 0;
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
         }
         public async Task<bool> DeleteEmployeeAsync(int idClient, int id, CancellationToken cancellationToken)
         {
