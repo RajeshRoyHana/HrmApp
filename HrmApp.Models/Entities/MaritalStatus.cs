@@ -1,6 +1,6 @@
 ﻿namespace HrmApp.Models.Entities;
 
-public partial class MaritalStatus
+public partial class MaritalStatus: AuditEntity
 {
     public int IdClient { get; set; }
 
@@ -8,9 +8,6 @@ public partial class MaritalStatus
 
     public string MaritalStatusName { get; set; } = null!;
 
-    public DateTime? SetDate { get; set; }
-
-    public string? CreatedBy { get; set; }
 
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

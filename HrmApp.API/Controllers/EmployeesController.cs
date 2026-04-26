@@ -16,16 +16,16 @@ namespace HrmApp.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<EmployeeListDto>>> GetAll([FromQuery] int clientId, CancellationToken cancellationToken)
+        public async Task<ActionResult<List<EmployeeListDto>>> GetAll([FromQuery] int idClient, CancellationToken cancellationToken)
         {
-            var employees = await _employeeService.GetEmployeeListAsync(clientId, cancellationToken);
+            var employees = await _employeeService.GetEmployeeListAsync(idClient, cancellationToken);
             return Ok(employees);
         }
 
         [HttpGet("details")]
-        public async Task<ActionResult<EmployeeDto>> Get([FromQuery] int clientId, [FromQuery] int id, CancellationToken cancellationToken)
+        public async Task<ActionResult<EmployeeDto>> Get([FromQuery] int idClient, [FromQuery] int id, CancellationToken cancellationToken)
         {
-            var employee = await _employeeService.GetEmployeeAsync(clientId, id, cancellationToken);
+            var employee = await _employeeService.GetEmployeeAsync(idClient, id, cancellationToken);
 
             if (employee == null)
                 return NotFound();
@@ -52,12 +52,12 @@ namespace HrmApp.API.Controllers
 
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromQuery] int clientId, int id, [FromBody] EmployeeDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> Update([FromQuery] int idClient, int id, [FromBody] EmployeeDto dto, CancellationToken cancellationToken)
         {
-            if (clientId <= 0 || id <= 0)
+            if (idClient <= 0 || id <= 0)
                 return BadRequest("Invalid client or employee id.");
 
-            if (dto.IdClient != clientId || dto.Id != id)
+            if (dto.IdClient != idClient || dto.Id != id)
                 return BadRequest("Mismatched ids.");
 
             var updated = await _employeeService.UpdateEmployeeAsync(dto, cancellationToken);
@@ -70,9 +70,9 @@ namespace HrmApp.API.Controllers
 
 
         [HttpDelete]
-        public async Task<IActionResult> Delete([FromQuery] int clientId, [FromQuery] int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> Delete([FromQuery] int idClient, [FromQuery] int id, CancellationToken cancellationToken)
         {
-            var deleted = await _employeeService.DeleteEmployeeAsync(clientId, id, cancellationToken);
+            var deleted = await _employeeService.DeleteEmployeeAsync(idClient, id, cancellationToken);
 
             if (!deleted)
                 return NotFound();

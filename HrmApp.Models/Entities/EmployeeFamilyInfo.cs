@@ -1,6 +1,6 @@
 ﻿namespace HrmApp.Models.Entities;
 
-public partial class EmployeeFamilyInfo
+public partial class EmployeeFamilyInfo: AuditEntity
 {
     public int IdClient { get; set; }
 
@@ -22,9 +22,6 @@ public partial class EmployeeFamilyInfo
 
     public string? PermanentAddress { get; set; }
 
-    public DateTime? SetDate { get; set; }
-
-    public string? CreatedBy { get; set; }
 
     public virtual Employee Employee { get; set; } = null!;
 

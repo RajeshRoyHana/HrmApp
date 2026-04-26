@@ -1,6 +1,6 @@
 ﻿namespace HrmApp.Models.Entities;
 
-public partial class Section
+public partial class Section: AuditEntity
 {
     public int IdClient { get; set; }
 
@@ -14,9 +14,6 @@ public partial class Section
 
     public int? IdDepartment { get; set; }
 
-    public DateTime? SetDate { get; set; }
-
-    public string? CreatedBy { get; set; }
 
     public virtual Department? Department { get; set; }
 

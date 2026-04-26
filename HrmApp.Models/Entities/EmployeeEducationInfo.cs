@@ -1,6 +1,6 @@
 ﻿namespace HrmApp.Models.Entities;
 
-public partial class EmployeeEducationInfo
+public partial class EmployeeEducationInfo: AuditEntity
 {
     public int IdClient { get; set; }
 
@@ -32,9 +32,6 @@ public partial class EmployeeEducationInfo
 
     public string? Achievement { get; set; }
 
-    public DateTime? SetDate { get; set; }
-
-    public string? CreatedBy { get; set; }
 
     public virtual EducationExamination EducationExamination { get; set; } = null!;
 

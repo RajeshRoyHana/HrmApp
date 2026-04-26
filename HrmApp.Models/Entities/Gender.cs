@@ -1,6 +1,6 @@
 ﻿namespace HrmApp.Models.Entities;
 
-public partial class Gender
+public partial class Gender: AuditEntity
 {
     public int IdClient { get; set; }
 
@@ -8,9 +8,6 @@ public partial class Gender
 
     public string? GenderName { get; set; }
 
-    public DateTime? SetDate { get; set; }
-
-    public string? CreatedBy { get; set; }
 
     public virtual ICollection<EmployeeFamilyInfo> EmployeeFamilyInfos { get; set; } = new List<EmployeeFamilyInfo>();
 

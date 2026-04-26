@@ -1,75 +1,180 @@
-﻿using HrmApp.Repositories.Interfaces;
+﻿using HrmApp.Services.DataContext;
 using HrmApp.Services.Interfaces;
 using HrmApp.Shared.Dtos;
+using Microsoft.EntityFrameworkCore;
 
 namespace HrmApp.Services
 {
     public class CommonService : ICommonService
     {
-        private readonly ICommonRepository _repository;
-
-        public CommonService(ICommonRepository repository)
+        private readonly AppDbContext _context;
+        public CommonService(AppDbContext context)
         {
-            _repository = repository;
+            _context = context;
         }
-        public async Task<List<DropdownDto>> EducationExaminationsAsync(int clientId, CancellationToken cancellationToken)
+        public async Task<List<DropdownDto>> EducationExaminationsAsync(int idClient, CancellationToken cancellationToken)
         {
-            return await _repository.EducationExaminationsAsync(clientId, cancellationToken);
-        }
-
-        public Task<List<DropdownDto>> EducationLevelsAsync(int clientId, CancellationToken cancellationToken)
-        {
-            return _repository.EducationLevelsAsync(clientId, cancellationToken);
-        }
-
-        public Task<List<DropdownDto>> GetDepartmentsAsync(int clientId, CancellationToken cancellationToken)
-        {
-            return _repository.GetDepartmentsAsync(clientId, cancellationToken);
+            var data = await _context.EducationExaminations
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(d => new DropdownDto
+                                 {
+                                     Value = d.Id,
+                                     Text = d.ExamName ?? string.Empty,
+                                 }).ToListAsync(cancellationToken);
+            return data;
         }
 
-        public Task<List<DropdownDto>> GetDesignationsAsync(int clientId, CancellationToken cancellationToken)
+        public async Task<List<DropdownDto>> EducationLevelsAsync(int idClient, CancellationToken cancellationToken)
         {
-            return _repository.GetDesignationsAsync(clientId, cancellationToken);
+            var data = await _context.EducationLevels
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.EducationLevelName ?? string.Empty
+                                 }).ToListAsync(cancellationToken);
+            return data;
         }
 
-        public Task<List<DropdownDto>> GetEmployeeTypesAsync(int clientId, CancellationToken cancellationToken)
+        public async Task<List<DropdownDto>> GetDepartmentsAsync(int idClient, CancellationToken cancellationToken)
         {
-            return _repository.GetEmployeeTypesAsync(clientId, cancellationToken);
+            var data = await _context.Departments
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.DepartName ?? string.Empty
+                                 }).ToListAsync(cancellationToken);
+            return data;
         }
 
-        public Task<List<DropdownDto>> GetGendersAsync(int clientId, CancellationToken cancellationToken)
+        public async Task<List<DropdownDto>> GetDesignationsAsync(int idClient, CancellationToken cancellationToken)
         {
-            return _repository.GetGendersAsync(clientId, cancellationToken);
+            var data = await _context.Designations
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.DesignationName ?? string.Empty
+
+                                 }).ToListAsync(cancellationToken);
+            return data;
         }
 
-        public Task<List<DropdownDto>> GetJobTypesAsync(int clientId, CancellationToken cancellationToken)
+        public async Task<List<DropdownDto>> GetEmployeeTypesAsync(int idClient, CancellationToken cancellationToken)
         {
-            return _repository.GetJobTypesAsync(clientId, cancellationToken);
+            var data = await _context.EmployeeTypes
+                                  .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.TypeName ?? string.Empty
+                                 }).ToListAsync(cancellationToken);
+            return data;
         }
 
-        public Task<List<DropdownDto>> GetMaritalStatusesAsync(int clientId,CancellationToken cancellationToken)
+        public async Task<List<DropdownDto>> GetGendersAsync(int idClient, CancellationToken cancellationToken)
         {
-            return _repository.GetMaritalStatusesAsync(clientId, cancellationToken);
+            var data = await _context.Genders
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.GenderName ?? string.Empty
+                                 })
+                                 .ToListAsync(cancellationToken);
+            return data;
         }
 
-        public Task<List<DropdownDto>> GetReligionsAsync(int clientId, CancellationToken cancellationToken)
+        public async Task<List<DropdownDto>> GetJobTypesAsync(int idClient, CancellationToken cancellationToken)
         {
-            return _repository.GetReligionsAsync(clientId, cancellationToken);
+            var data = await _context.JobTypes
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.JobTypeName ?? string.Empty
+                                 })
+                                 .ToListAsync(cancellationToken);
+            return data;
         }
 
-        public Task<List<DropdownDto>> GetSectionsAsync(int clientId, CancellationToken cancellationToken)
+        public async Task<List<DropdownDto>> GetMaritalStatusesAsync(int idClient, CancellationToken cancellationToken)
         {
-            return _repository.GetSectionsAsync(clientId, cancellationToken);
+            var data = await _context.MaritalStatuses
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.MaritalStatusName ?? string.Empty
+                                 })
+                                 .ToListAsync(cancellationToken);
+            return data;
         }
 
-        public Task<List<DropdownDto>> GetWeeekOffsAsync(int clientId,CancellationToken cancellationToken)
+        public async Task<List<DropdownDto>> GetReligionsAsync(int idClient, CancellationToken cancellationToken)
         {
-            return _repository.GetWeeekOffsAsync(clientId, cancellationToken);
+            var data = await _context.Religions
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.ReligionName ?? string.Empty
+                                 })
+                                 .ToListAsync(cancellationToken);
+            return data;
         }
 
-        public Task<List<DropdownDto>> RelationshipsAsync(int clientId, CancellationToken cancellationToken)
+        public async Task<List<DropdownDto>> GetSectionsAsync(int idClient, CancellationToken cancellationToken)
         {
-            return _repository.RelationshipsAsync(clientId, cancellationToken);
+            var data = await _context.Sections
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.SectionName ?? string.Empty
+
+                                 })
+                                 .ToListAsync(cancellationToken);
+            return data;
+        }
+
+        public async Task<List<DropdownDto>> GetWeeekOffsAsync(int idClient, CancellationToken cancellationToken)
+        {
+            var data = await _context.WeekOffs
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.WeekOffDay ?? string.Empty
+                                 })
+                                 .ToListAsync(cancellationToken);
+            return data;
+        }
+
+        public async Task<List<DropdownDto>> RelationshipsAsync(int idClient, CancellationToken cancellationToken)
+        {
+            var data = await _context.Relationships
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.RelationName ?? string.Empty
+                                 })
+                                 .ToListAsync(cancellationToken);
+            return data;
         }
     }
 }

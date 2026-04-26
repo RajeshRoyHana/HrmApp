@@ -1,6 +1,6 @@
 ﻿namespace HrmApp.Models.Entities;
 
-public partial class Designation
+public partial class Designation: AuditEntity
 {
     public int IdClient { get; set; }
 
@@ -12,9 +12,6 @@ public partial class Designation
 
     public bool? IsActive { get; set; }
 
-    public DateTime? SetDate { get; set; }
-
-    public string? CreatedBy { get; set; }
 
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

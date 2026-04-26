@@ -1,7 +1,6 @@
 <Solution>
   <Project Path="HrmApp.API/HrmApp.API.csproj" Id="1463ce3c-ab86-404c-aa0c-5d5082a34fa7" />
   <Project Path="HrmApp.Models/HrmApp.Models.csproj" Id="b1f53bb7-479b-4439-881c-1526ff178331" />
-  <Project Path="HrmApp.Repository/HrmApp.Repositories.csproj" Id="d7b35fe8-2a73-4a53-8bb2-8ff3125548b4" />
   <Project Path="HrmApp.Service/HrmApp.Services.csproj" Id="c353ac24-2be1-4aa8-8717-96815bf661fd" />
   <Project Path="HrmApp.Shared/HrmApp.Shared.csproj" Id="fa18fe25-e43b-40f1-ace5-e0783eff7b69" />
 </Solution>

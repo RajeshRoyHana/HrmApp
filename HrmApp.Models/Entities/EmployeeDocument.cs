@@ -1,6 +1,6 @@
 ﻿namespace HrmApp.Models.Entities;
 
-public partial class EmployeeDocument
+public partial class EmployeeDocument: AuditEntity
 {
     public int IdClient { get; set; }
 
@@ -18,9 +18,6 @@ public partial class EmployeeDocument
 
     public byte[]? UploadedFile { get; set; }
 
-    public DateTime? SetDate { get; set; }
-
-    public string? CreatedBy { get; set; }
 
     public virtual Employee Employee { get; set; } = null!;
 }

@@ -1,6 +1,6 @@
 ﻿namespace HrmApp.Models.Entities;
 
-public class Employee
+public class Employee: AuditEntity
 {
     public int IdClient { get; set; }
 
@@ -53,10 +53,6 @@ public class Employee
     public int? IdMaritalStatus { get; set; }
 
     public bool? IsActive { get; set; }
-
-    public DateTime? SetDate { get; set; }
-
-    public string? CreatedBy { get; set; }
 
     public virtual Department Department { get; set; } = null!;
 
