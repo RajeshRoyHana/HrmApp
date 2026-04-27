@@ -20,6 +20,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 
 }
+app.UseCors("AllowAngular");
 
 app.MapControllers();
 

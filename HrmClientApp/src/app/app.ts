@@ -1,10 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { EmployeeForm } from './features/Employee/employee-form/employee-form';
+import { ToastComponent } from './shared/components/toast-component/toast-component';
+
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, EmployeeForm],
+  imports: [RouterOutlet,ToastComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

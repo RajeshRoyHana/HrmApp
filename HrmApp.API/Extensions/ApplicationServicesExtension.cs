@@ -20,6 +20,21 @@ namespace HrmApp.API.Extensions
 
             services.AddScoped<ICommonService, CommonService>();
 
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAngular",
+                    policy =>
+                    {
+                        policy
+                            .AllowAnyOrigin()
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+
+                    });
+            });
+
+
             return services;
         }
     }

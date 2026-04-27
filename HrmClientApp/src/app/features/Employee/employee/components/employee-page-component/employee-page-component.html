@@ -1,0 +1,23 @@
+ <div class="emp-page">
+
+      <!-- Sidebar -->
+      <div class="emp-sidebar" [class.mobile-open]="sidebarOpen()">
+        <app-employee-list-component (click)="closeSidebar()"></app-employee-list-component>
+      </div>
+
+      <!-- Mobile overlay -->
+      @if (sidebarOpen()) {
+        <div class="mob-overlay" (click)="sidebarOpen.set(false)"></div>
+      }
+
+      <!-- Main form -->
+      <div class="emp-main">
+       <app-employee-form-component></app-employee-form-component>
+      </div>
+
+      <!-- Mobile FAB to open sidebar -->
+      <button class="mob-fab d-md-none" (click)="sidebarOpen.set(!sidebarOpen())"
+              title="Employee List">
+        <i class="bi" [class.bi-x-lg]="sidebarOpen()" [class.bi-people-fill]="!sidebarOpen()"></i>
+      </button>
+    </div>

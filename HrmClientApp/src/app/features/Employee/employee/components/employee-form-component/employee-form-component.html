@@ -1,0 +1,508 @@
+<div class="hrm-form-root" [formGroup]="form">
+
+    <!-- ══ TOP BAR ══ -->
+    <div class="top-bar d-flex align-items-center justify-content-between px-3">
+      <span class="top-bar-title">
+        {{ state.mode() === 'edit' ? 'Edit Employee' : 'New Employee' }}
+        @if (state.selectedEmployee()?.id) {
+          <span class="ms-2 emp-id-badge">#{{ state.selectedEmployee()?.id }}</span>
+        } 
+      </span> 
+      <div class="d-flex gap-2">
+        @if (!isViewOnly()) {
+          <button type="button" class="btn-action btn-add"
+                  [disabled]="state.saving()" (click)="onSave()">
+            @if (state.saving()) {
+              <span class="spinner-border spinner-border-sm"></span>
+            } @else {
+              {{ state.mode() === 'edit' ? 'Update' : 'Add' }}
+            }
+          </button>
+        }
+        @if (state.mode() === 'edit') {
+          <button type="button" class="btn-action btn-toggle" (click)="toggleViewMode()">
+            {{ isViewOnly() ? 'Edit' : 'View' }}
+          </button>
+        }
+        <button type="button" class="btn-action btn-reset" (click)="onReset()">Reset</button>
+      </div>
+    </div>
+
+    <div class="form-body">
+
+      <!-- ══ BASIC INFORMATION ══ -->
+      <div class="section-block">
+        <div class="section-header">Employee Information</div>
+        <div class="section-body">
+          <div class="row g-3">
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">EMPLOYEE NAME <span class="req">*</span></label>
+              <input type="text" class="form-control fld"
+                     formControlName="employeeName" placeholder="Enter full name"
+                     maxlength="250" [class.is-invalid]="showErr('employeeName')"
+                     [readonly]="isViewOnly()">
+              @if (showErr('employeeName')) {
+                <div class="err-msg">Name is required.</div>
+              }
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">NAME (BANGLA)</label>
+              <input type="text" class="form-control fld"
+                     formControlName="employeeNameBangla" placeholder="বাংলায় নাম লিখুন"
+                     maxlength="250" [readonly]="isViewOnly()">
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">FATHER'S NAME</label>
+              <input type="text" class="form-control fld"
+                     formControlName="fatherName" placeholder="Father's name"
+                     maxlength="250" [readonly]="isViewOnly()">
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">MOTHER'S NAME</label>
+              <input type="text" class="form-control fld"
+                     formControlName="motherName" placeholder="Mother's name"
+                     maxlength="250" [readonly]="isViewOnly()">
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">CONTACT NO</label>
+              <input type="text" class="form-control fld"
+                     formControlName="contactNo" placeholder="+880..."
+                     maxlength="250" [readonly]="isViewOnly()">
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">NID NUMBER</label>
+              <input type="text" class="form-control fld"
+                     formControlName="nationalIdentificationNumber" placeholder="National ID"
+                     maxlength="30" [readonly]="isViewOnly()">
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">DATE OF BIRTH</label>
+              <input type="date" class="form-control fld"
+                     formControlName="birthDate" [readonly]="isViewOnly()">
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">JOINING DATE</label>
+              <input type="date" class="form-control fld"
+                     formControlName="joiningDate" [readonly]="isViewOnly()">
+            </div>
+          </div>
+            <div class="row g-3">
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">DEPARTMENT <span class="req">*</span></label>
+              <select class="form-select fld" formControlName="idDepartment"
+                      [class.is-invalid]="showErr('idDepartment')"
+                      [attr.disabled]="isViewOnly() ? true : null">
+                <option value="">-- Select --</option>
+                @for (d of dd.store().departments; track d.value) {
+                  <option [value]="d.value">{{ d.text }}</option>
+                }
+              </select>
+              @if (showErr('idDepartment')) { <div class="err-msg">Department is required.</div> }
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">SECTION <span class="req">*</span></label>
+              <select class="form-select fld" formControlName="idSection"
+                      [class.is-invalid]="showErr('idSection')"
+                      [attr.disabled]="isViewOnly() ? true : null">
+                <option value="">-- Select --</option>
+                @for (s of dd.store().sections; track s.value) {
+                  <option [value]="s.value">{{ s.text }}</option>
+                }
+              </select>
+              @if (showErr('idSection')) { <div class="err-msg">Section is required.</div> }
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">DESIGNATION</label>
+              <select class="form-select fld" formControlName="idDesignation"
+                      [attr.disabled]="isViewOnly() ? true : null">
+                <option value="">-- Select --</option>
+                @for (d of dd.store().designations; track d.value) {
+                  <option [value]="d.value">{{ d.text }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">JOB TYPE</label>
+              <select class="form-select fld" formControlName="idJobType"
+                      [attr.disabled]="isViewOnly() ? true : null">
+                <option value="">-- Select --</option>
+                @for (j of dd.store().jobTypes; track j.value) {
+                  <option [value]="j.value">{{ j.text }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">EMPLOYEE TYPE</label>
+              <select class="form-select fld" formControlName="idEmployeeType"
+                      [attr.disabled]="isViewOnly() ? true : null">
+                <option value="">-- Select --</option>
+                @for (t of dd.store().employeeTypes; track t.value) {
+                  <option [value]="t.value">{{ t.text }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">WEEK OFF</label>
+              <select class="form-select fld" formControlName="idWeekOff"
+                      [attr.disabled]="isViewOnly() ? true : null">
+                <option value="">-- Select --</option>
+                @for (w of dd.store().weekOffs; track w.value) {
+                  <option [value]="w.value">{{ w.text }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">GENDER</label>
+              <select class="form-select fld" formControlName="idGender"
+                      [attr.disabled]="isViewOnly() ? true : null">
+                <option value="">-- Select --</option>
+                @for (g of dd.store().genders; track g.value) {
+                  <option [value]="g.value">{{ g.text }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">RELIGION</label>
+              <select class="form-select fld" formControlName="idReligion"
+                      [attr.disabled]="isViewOnly() ? true : null">
+                <option value="">-- Select --</option>
+                @for (r of dd.store().religions; track r.value) {
+                  <option [value]="r.value">{{ r.text }}</option>
+                }
+              </select>
+            </div>
+           
+
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">MARITAL STATUS</label>
+              <select class="form-select fld" formControlName="idMaritalStatus"
+                      [attr.disabled]="isViewOnly() ? true : null">
+                <option value="">-- Select --</option>
+                @for (m of dd.store().maritalStatuses; track m.value) {
+                  <option [value]="m.value">{{ m.text }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">REPORTING MANAGER</label>
+              <select class="form-select fld" formControlName="idReportingManager"
+                      [attr.disabled]="isViewOnly() ? true : null">
+                <option value="">-- Select --</option>
+                @for (e of state.employeeList(); track e.id) {
+                  <option [value]="e.id">{{ e.employeeName }}</option>
+                }
+              </select>
+            </div>
+             <div class="col-lg-3 col-md-6">
+              <label class="field-label">PERMANENT ADDRESS</label>
+              <textarea type="text" class="form-control fld"
+                     formControlName="address" placeholder="Permanent address"
+                     maxlength="250" [readonly]="isViewOnly()"></textarea>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">PRESENT ADDRESS</label>
+              <textarea type="text" class="form-control fld"
+                     formControlName="presentAddress" placeholder="Present address"
+                     maxlength="250" [readonly]="isViewOnly()"></textarea>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="field-label">Employee Image(Upload JPG, PNG)</label>
+             
+              <input type="file"
+                 class="form-control fld"
+                 accept="image/*"
+                 (change)="onImageSelected($event)"
+                 [disabled]="isViewOnly()">
+            </div>
+             <!-- <div class="col-lg-3 col-md-6">
+              <label class="field-label">Employee Image</label>
+             
+            </div> -->
+            <div class="col-lg-6 col-md-12 d-flex align-items-end pb-2">
+              <div class="d-flex align-items-center gap-4 flex-wrap">
+                <label class="toggle-label">
+                  <input type="radio" formControlName="hasOvertime" [value]="true"
+                         [attr.disabled]="isViewOnly() ? true : null">
+                  <span>Overtime</span>
+                </label>
+                <label class="toggle-label">
+                  <input type="checkbox" formControlName="hasAttendenceBonus"
+                         [attr.disabled]="isViewOnly() ? true : null">
+                  <span>Attendance Bonus</span>
+                </label>
+                <label class="toggle-label switch-label">
+                  <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox"
+                           formControlName="isActive"
+                           [attr.disabled]="isViewOnly() ? true : null">
+                    <span class="ms-1">Active</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ══ FAMILY INFORMATION ══ -->
+      <div class="section-block">
+        <div class="section-header d-flex align-items-center justify-content-between">
+          <span>Family Information</span>
+          @if (!isViewOnly()) {
+            <button type="button" class="btn-add-row" (click)="addFamily()">Add Row</button>
+          }
+        </div>
+        <div class="table-wrap">
+          <table class="detail-table w-100">
+            <thead>
+              <tr>
+                <th class="th-num">#</th>
+                <th>NAME <span class="req">*</span></th>
+                <th>GENDER <span class="req">*</span></th>
+                <th>RELATIONSHIP <span class="req">*</span></th>
+                <th>DATE OF BIRTH</th>
+                <th>CONTACT NO</th>
+                <th>CURRENT ADDRESS</th>
+                <th>PERMANENT ADDRESS</th>
+                @if (!isViewOnly()) { <th class="th-act"></th> }
+              </tr>
+            </thead>
+            <tbody formArrayName="employeeFamilyInfos">
+              @if (familyArray.length === 0) {
+                <tr><td [attr.colspan]="isViewOnly() ? 8 : 9" class="empty-row">No family records. Click 'Add Row' to add.</td></tr>
+              }
+              @for (row of familyArray.controls; track $index; let i = $index) {
+                <tr [formGroupName]="i">
+                  <td class="th-num text-center td-num">{{ i + 1 }}</td>
+                  <td><input type="text" class="ti" formControlName="name" maxlength="50" placeholder="Full name"
+                             [class.ti-err]="tblErr(familyArray,i,'name')" [readonly]="isViewOnly()"></td>
+                  <td>
+                    <select class="ts" formControlName="idGender"
+                            [class.ti-err]="tblErr(familyArray,i,'idGender')"
+                            [attr.disabled]="isViewOnly() ? true : null">
+                      <option value="">--</option>
+                      @for (g of dd.store().genders; track g.value) { <option [value]="g.value">{{ g.text }}</option> }
+                    </select>
+                  </td>
+                  <td>
+                    <select class="ts" formControlName="idRelationship"
+                            [class.ti-err]="tblErr(familyArray,i,'idRelationship')"
+                            [attr.disabled]="isViewOnly() ? true : null">
+                      <option value="">--</option>
+                      @for (r of dd.store().relationships; track r.value) { <option [value]="r.value">{{ r.text }}</option> }
+                    </select>
+                  </td>
+                  <td><input type="date" class="ti" formControlName="dateOfBirth" [readonly]="isViewOnly()"></td>
+                  <td><input type="text" class="ti" formControlName="contactNo" maxlength="50" [readonly]="isViewOnly()"></td>
+                  <td><input type="text" class="ti" formControlName="currentAddress" maxlength="500" [readonly]="isViewOnly()"></td>
+                  <td><input type="text" class="ti" formControlName="permanentAddress" maxlength="500" [readonly]="isViewOnly()"></td>
+                  @if (!isViewOnly()) {
+                    <td class="th-act text-center">
+                      <button type="button" class="btn-rm" (click)="familyArray.removeAt(i)"><i class="bi bi-x-lg"></i></button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ EDUCATION INFORMATION ══ -->
+      <div class="section-block">
+        <div class="section-header d-flex align-items-center justify-content-between">
+          <span>Education Information</span>
+          @if (!isViewOnly()) {
+            <button type="button" class="btn-add-row" (click)="addEducation()">Add Row</button>
+          }
+        </div>
+        <div class="table-wrap">
+          <table class="detail-table w-100">
+            <thead>
+              <tr>
+                <th class="th-num">#</th>
+                <th>LEVEL <span class="req">*</span></th>
+                <th>EXAMINATION <span class="req">*</span></th>
+                <th>RESULT <span class="req">*</span></th>
+                <th>MAJOR <span class="req">*</span></th>
+                <th>PASSING YEAR <span class="req">*</span></th>
+                <th>INSTITUTE <span class="req">*</span></th>
+                <th>CGPA</th>
+                <th>SCALE</th>
+                <th>MARKS</th>
+                <th>FOREIGN</th>
+                <th>DURATION</th>
+                <th>ACHIEVEMENT</th>
+                @if (!isViewOnly()) { <th class="th-act"></th> }
+              </tr>
+            </thead>
+            <tbody formArrayName="employeeEducationInfos">
+              @if (educationArray.length === 0) {
+                <tr><td [attr.colspan]="isViewOnly() ? 13 : 14" class="empty-row">No education records. Click 'Add Row' to add.</td></tr>
+              }
+              @for (row of educationArray.controls; track $index; let i = $index) {
+                <tr [formGroupName]="i">
+                  <td class="text-center td-num">{{ i + 1 }}</td>
+                  <td>
+                    <select class="ts" formControlName="idEducationLevel"
+                            [class.ti-err]="tblErr(educationArray,i,'idEducationLevel')"
+                            [attr.disabled]="isViewOnly() ? true : null">
+                      <option value="">--</option>
+                      @for (l of dd.store().educationLevels; track l.value) { <option [value]="l.value">{{ l.text }}</option> }
+                    </select>
+                  </td>
+                  <td>
+                    <select class="ts" formControlName="idEducationExamination"
+                            [class.ti-err]="tblErr(educationArray,i,'idEducationExamination')"
+                            [attr.disabled]="isViewOnly() ? true : null">
+                      <option value="">--</option>
+                      @for (e of dd.store().educationExaminations; track e.value) { <option [value]="e.value">{{ e.text }}</option> }
+                    </select>
+                  </td>
+                  <td><input type="text" class="ti w80" formControlName="idEducationResult"
+                             [class.ti-err]="tblErr(educationArray,i,'idEducationResult')" [readonly]="isViewOnly()"></td>
+                  <td><input type="text" class="ti" formControlName="major" maxlength="50" placeholder="CSE"
+                             [class.ti-err]="tblErr(educationArray,i,'major')" [readonly]="isViewOnly()"></td>
+                  <td><input type="number" class="ti w80" formControlName="passingYear" min="1970" max="2030"
+                             [class.ti-err]="tblErr(educationArray,i,'passingYear')" [readonly]="isViewOnly()"></td>
+                  <td><input type="text" class="ti" formControlName="instituteName" maxlength="250"
+                             [class.ti-err]="tblErr(educationArray,i,'instituteName')" [readonly]="isViewOnly()"></td>
+                  <td><input type="number" class="ti w70" formControlName="cgpa" step="0.01" [readonly]="isViewOnly()"></td>
+                  <td><input type="number" class="ti w70" formControlName="examScale" step="0.01" [readonly]="isViewOnly()"></td>
+                  <td><input type="number" class="ti w70" formControlName="marks" [readonly]="isViewOnly()"></td>
+                  <td class="text-center">
+                    <input type="checkbox" class="form-check-input" formControlName="isForeignInstitute"
+                           [attr.disabled]="isViewOnly() ? true : null">
+                  </td>
+                  <td><input type="number" class="ti w70" formControlName="duration" step="0.5" [readonly]="isViewOnly()"></td>
+                  <td><input type="text" class="ti" formControlName="achievement" maxlength="500" [readonly]="isViewOnly()"></td>
+                  @if (!isViewOnly()) {
+                    <td class="th-act text-center">
+                      <button type="button" class="btn-rm" (click)="educationArray.removeAt(i)"><i class="bi bi-x-lg"></i></button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ DOCUMENTS + CERTIFICATIONS (two columns) ══ -->
+      <div class="row g-0">
+        <!-- Documents -->
+        <div class="col-lg-6 col-12 pe-lg-1">
+          <div class="section-block">
+            <div class="section-header d-flex align-items-center justify-content-between">
+              <span>Documents</span>
+              @if (!isViewOnly()) {
+                <button type="button" class="btn-add-row" (click)="addDocument()">Add Row</button>
+              }
+            </div>
+            <div class="table-wrap">
+              <table class="detail-table w-100">
+                <thead>
+                  <tr>
+                    <th class="th-num">#</th>
+                    <th>DOCUMENT NAME <span class="req">*</span></th>
+                    <th>FILE NAME <span class="req">*</span></th>
+                    <th>UPLOAD DATE <span class="req">*</span></th>
+                    <th>EXT</th>
+                    @if (!isViewOnly()) { <th class="th-act"></th> }
+                  </tr>
+                </thead>
+                <tbody formArrayName="employeeDocuments">
+                  @if (documentArray.length === 0) {
+                    <tr><td [attr.colspan]="isViewOnly() ? 5 : 6" class="empty-row">No documents. Click 'Add Row' to upload.</td></tr>
+                  }
+                  @for (row of documentArray.controls; track $index; let i = $index) {
+                    <tr [formGroupName]="i">
+                      <td class="text-center td-num">{{ i + 1 }}</td>
+                      <td><input type="text" class="ti" formControlName="documentName" maxlength="200"
+                                 [class.ti-err]="tblErr(documentArray,i,'documentName')" [readonly]="isViewOnly()"></td>
+                      <td>
+                        @if (!isViewOnly()) {
+                          <label class="file-lbl">
+                            <input type="file" class="d-none" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                   (change)="onDocFile($event, i)">
+                            <span class="file-name-text">
+                              {{ asGroup(documentArray.at(i)).get('fileName')?.value || 'Choose file...' }}
+                            </span>
+                          </label>
+                        } @else {
+                          <span class="ti-ro">{{ asGroup(documentArray.at(i)).get('fileName')?.value }}</span>
+                        }
+                      </td>
+                      <td><input type="date" class="ti" formControlName="uploadDate" [readonly]="isViewOnly()"></td>
+                      <td><input type="text" class="ti w60" formControlName="uploadedFileExtention"
+                                 maxlength="10" [readonly]="true"></td>
+                      @if (!isViewOnly()) {
+                        <td class="th-act text-center">
+                          <button type="button" class="btn-rm" (click)="documentArray.removeAt(i)"><i class="bi bi-x-lg"></i></button>
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Certifications -->
+        <div class="col-lg-6 col-12 ps-lg-1">
+          <div class="section-block">
+            <div class="section-header d-flex align-items-center justify-content-between">
+              <span>Professional Certifications</span>
+              @if (!isViewOnly()) {
+                <button type="button" class="btn-add-row" (click)="addCertification()">Add Row</button>
+              }
+            </div>
+            <div class="table-wrap">
+              <table class="detail-table w-100">
+                <thead>
+                  <tr>
+                    <th class="th-num">#</th>
+                    <th>CERTIFICATION TITLE <span class="req">*</span></th>
+                    <th>INSTITUTE <span class="req">*</span></th>
+                    <th>LOCATION <span class="req">*</span></th>
+                    <th>FROM DATE <span class="req">*</span></th>
+                    <th>TO DATE</th>
+                    @if (!isViewOnly()) { <th class="th-act"></th> }
+                  </tr>
+                </thead>
+                <tbody formArrayName="employeeProfessionalCertifications">
+                  @if (certificationArray.length === 0) {
+                    <tr><td [attr.colspan]="isViewOnly() ? 6 : 7" class="empty-row">No certifications. Click 'Add Row' to add.</td></tr>
+                  }
+                  @for (row of certificationArray.controls; track $index; let i = $index) {
+                    <tr [formGroupName]="i">
+                      <td class="text-center td-num">{{ i + 1 }}</td>
+                      <td><input type="text" class="ti" formControlName="certificationTitle" maxlength="255"
+                                 [class.ti-err]="tblErr(certificationArray,i,'certificationTitle')" [readonly]="isViewOnly()"></td>
+                      <td><input type="text" class="ti" formControlName="certificationInstitute" maxlength="250"
+                                 [class.ti-err]="tblErr(certificationArray,i,'certificationInstitute')" [readonly]="isViewOnly()"></td>
+                      <td><input type="text" class="ti" formControlName="instituteLocation" maxlength="250"
+                                 [class.ti-err]="tblErr(certificationArray,i,'instituteLocation')" [readonly]="isViewOnly()"></td>
+                      <td><input type="date" class="ti" formControlName="fromDate"
+                                 [class.ti-err]="tblErr(certificationArray,i,'fromDate')" [readonly]="isViewOnly()"></td>
+                      <td><input type="date" class="ti" formControlName="toDate" [readonly]="isViewOnly()"></td>
+                      @if (!isViewOnly()) {
+                        <td class="th-act text-center">
+                          <button type="button" class="btn-rm" (click)="certificationArray.removeAt(i)"><i class="bi bi-x-lg"></i></button>
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /form-body -->
+  </div>
