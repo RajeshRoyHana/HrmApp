@@ -1,0 +1,33 @@
+@if (confirmDialog.dialog(); as dlg) {
+  <div class="confirm-backdrop" (click)="confirmDialog.cancel()"></div>
+
+  <div class="confirm-wrapper">
+    <div class="confirm-dialog" [ngClass]="dialogClass(dlg.type)">
+      <div class="confirm-header">
+        <div class="confirm-icon">
+          <i [class]="iconClass(dlg.type)"></i>
+        </div>
+
+        <div class="confirm-title-wrap">
+          <div class="confirm-title">{{ dlg.title }}</div>
+          <div class="confirm-message">{{ dlg.message }}</div>
+        </div>
+      </div>
+
+      <div class="confirm-actions">
+        <button type="button"
+                class="btn btn-light px-3"
+                (click)="confirmDialog.cancel()">
+          {{ dlg.cancelText }}
+        </button>
+
+        <button type="button"
+                class="btn"
+                [ngClass]="dlg.type === 'danger' ? 'btn-danger' : 'btn-warning'"
+                (click)="confirmDialog.confirmOk()">
+          {{ dlg.confirmText }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

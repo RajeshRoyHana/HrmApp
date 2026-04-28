@@ -77,7 +77,7 @@ namespace HrmApp.Services
                             DocumentName = d.DocumentName,
                             FileName = d.FileName,
                             UploadedFileExtention = d.UploadedFileExtention,
-                            SetDate = d.SetDate
+                            UploadDate = d.UploadDate,
                         }).ToList(),
 
                     EmployeeEducationInfos = employee.EmployeeEducationInfos
@@ -492,7 +492,6 @@ namespace HrmApp.Services
                 return false;
 
             employee.IsActive = false;
-            employee.SetDate = DateTime.UtcNow;
 
             var savechangeVales = await _context.SaveChangesAsync(cancellationToken);
             return savechangeVales > 0;

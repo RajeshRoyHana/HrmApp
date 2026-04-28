@@ -54,6 +54,37 @@ export class EmployeeStateService {
       idDepartment: 0,
       idSection: 0,
       isActive: true,
+      
+    employeeNameBangla: null,
+    employeeImage: null,
+
+    fatherName: null,
+    motherName: null,
+
+    idReportingManager: null,
+    idJobType: null,
+    idEmployeeType: null,
+
+    birthDate: null,
+    joiningDate: null,
+
+    idGender: null,
+    idReligion: null,
+
+
+    idDesignation: null,
+
+    hasOvertime: false,
+    hasAttendenceBonus: false,
+    idWeekOff: null,
+
+    address: null,
+    presentAddress: null,
+    nationalIdentificationNumber: null,
+    contactNo: null,
+
+    idMaritalStatus: null,
+
       employeeDocuments: [],
       employeeEducationInfos: [],
       employeeFamilyInfos: [],
@@ -64,9 +95,7 @@ export class EmployeeStateService {
   save(dto: EmployeeDto): void {
     this.saving.set(true);
     const isEdit = this.mode() === 'edit' && !!dto.id;
-    const call = isEdit
-      ? this.api.updateEmployee(dto.id!, dto)
-      : this.api.addEmployee(dto);
+    const call = isEdit? this.api.updateEmployee(dto.id!, dto) : this.api.addEmployee(dto);
 
     call.subscribe({
       next: () => {
@@ -87,7 +116,7 @@ export class EmployeeStateService {
       next: () => {
         this.toast.success('Employee deleted');
         this.employeeList.update(list => list.filter(e => e.id !== id));
-        if (this.selectedEmployee()?.id === id) this.startNew();
+        if (this.selectedEmployee()?.id === id) this.startNew(); //return true
       },
       error: () => this.toast.error('Failed to delete employee')
     });

@@ -25,11 +25,7 @@ export class EmployeeListComponent implements OnInit {
     this.employeeService.startNew();
   }
 
-  deleteEmployee(emp: any) {
-    if (confirm(`Delete "${emp.employeeName}"? This action cannot be undone.`)) {
-      this.employeeService.deleteEmployee(emp.id);
-    }
-  }
+ 
 
   getInitials(name: string | null): string {
     if (!name) return '?';

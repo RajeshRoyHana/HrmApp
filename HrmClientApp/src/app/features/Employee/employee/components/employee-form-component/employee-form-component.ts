@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, effect, inject, OnInit, signal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, AbstractControl, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, AbstractControl, Validators, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { environment } from '../../../../../../environments/environment';
 import { DropdownService } from '../../../../../shared/services/dropdown.service';
 import { FileUtilService } from '../../../../../shared/services/file-util.service';
 import { ToastService } from '../../../../../shared/services/toast.service';
 import { EmployeeDto } from '../../../models/employee.models';
 import { EmployeeStateService } from '../../../services/employee-state.service';
+import { ConfirmDialogService } from '../../../../../shared/services/confirm-dialog-service';
 
 
 @Component({
@@ -21,6 +22,7 @@ export class EmployeeFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private fileUtil = inject(FileUtilService);
   private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   form!: FormGroup;
   imagePreview = signal<string | null>(null);
@@ -195,6 +197,8 @@ export class EmployeeFormComponent implements OnInit {
     }));
   }
 
+  
+
   async onDocFile(event: Event, i: number) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
@@ -227,8 +231,12 @@ export class EmployeeFormComponent implements OnInit {
 
   onSave() {
     this.form.markAllAsTouched();
-    if (this.form.invalid) { this.toast.warning('Please fill all required fields.'); return; }
-    this.employeeService.save(this.employeeDto());
+    if (this.form.invalid) { 
+      this.toast.warning('Please fill all required fields.'); 
+      return; 
+    }
+     this.employeeService.save(this.employeeDto());
+     this.onReset();
   }
 
   onReset() {
@@ -254,6 +262,25 @@ export class EmployeeFormComponent implements OnInit {
       }
     }
   }
+
+  //  deleteEmployee(emp: any) {
+  //   if (confirm(`Delete "${emp.employeeName}"? This action cannot be undone.`)) {
+  //     this.employeeService.deleteEmployee(emp.id);
+  //   }
+
+    
+  // }
+  
+async deleteEmployee(emp: any): Promise<void> {
+  const confirmed = await this.confirmDialog.confirmDelete(
+    `Are you sure you want to delete "${emp.employeeName}"?`
+  );
+
+  if (!confirmed) return;
+
+  this.employeeService.deleteEmployee(emp.id);
+}
+
 
   private employeeDto(): EmployeeDto {
     const r = this.form.getRawValue();
