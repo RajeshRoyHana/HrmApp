@@ -5,24 +5,21 @@
         <div class="d-flex align-items-center justify-content-between mb-3">
           <div>
             <h6 class="mb-0 fw-bold text-white">Employee List</h6>
-            <!-- <small class="text-white-50">{{ state.filteredList().length }} employee(s)</small> -->
           </div>
-          <!-- <button class="btn btn-sm btn-add-new" (click)="addNew()" title="Add New Employee">
-            <i class="bi bi-person-plus-fill"></i>
-          </button> -->
+ 
         </div>
         <!-- Search -->
         <div class="search-box position-relative">
           <i class="bi bi-search position-absolute top-50 translate-middle-y ms-2 text-muted" style="left:4px"></i>
           <input type="text" class="form-control form-control-sm ps-4"
                  placeholder="Search by name, ID..."
-                 [value]="state.searchQuery()"
-                 (input)="state.searchQuery.set($any($event.target).value)" />
+                 [value]="employeeService.searchQuery()"
+                 (input)="employeeService.searchQuery.set($any($event.target).value)" />
         </div>
       </div>
 
       <!-- Loading skeleton -->
-      @if (state.loading() && state.employeeList().length === 0) {
+      @if (employeeService.loading() && employeeService.employeeList().length === 0) {
         <div class="px-3 py-2">
           @for (i of [1,2,3,4,5]; track i) {
             <div class="skeleton-item mb-2"></div>
@@ -32,16 +29,16 @@
 
       <!-- List -->
       <div class="employee-list-body flex-grow-1 overflow-auto px-2 pb-3">
-        @if (!state.loading() && state.filteredList().length === 0) {
+        @if (!employeeService.loading() && employeeService.filteredList().length === 0) {
           <div class="text-center py-5 text-white-50">
             <i class="bi bi-people fs-2 d-block mb-2"></i>
             <small>No employees found</small>
           </div>
         }
 
-        @for (emp of state.filteredList(); track emp.id) {
+        @for (emp of employeeService.filteredList(); track emp.id) {
           <div class="employee-card"
-               [class.active]="state.selectedEmployee()?.id === emp.id"
+               [class.active]="employeeService.selectedEmployee()?.id === emp.id"
                (click)="selectEmployee(emp.id)">
             
             <div class="emp-info flex-grow-1 min-width-0">

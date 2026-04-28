@@ -28,7 +28,8 @@ export class DropdownService {
     departments: [], sections: [], designations: [],
     genders: [], religions: [], maritalStatuses: [],
     jobTypes: [], employeeTypes: [], weekOffs: [],
-    relationships: [], educationLevels: [], educationExaminations: [], educationResults: []
+    relationships: [], educationLevels: [], educationExaminations: [],
+    educationResults: []
   });
 
   readonly loaded = signal(false);

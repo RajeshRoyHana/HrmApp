@@ -95,3 +95,24 @@
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
+
+    
+.employee-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;          /* ✅ hard stop overflow */
+}
+
+.emp-info {
+  flex: 1;
+  min-width: 0;              /* ✅ REQUIRED */
+  overflow: hidden;
+}
+
+.emp-name,
+.emp-designation {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

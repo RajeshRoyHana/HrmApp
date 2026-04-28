@@ -48,8 +48,6 @@ export class EmployeeStateService {
 
   startNew(): void {
     this.mode.set('add');
-    // FIX: set a fresh object so the effect in the form component fires
-    // and clears / resets all fields correctly
     this.selectedEmployee.set({
       idClient: environment.idClient,
       employeeName: null,

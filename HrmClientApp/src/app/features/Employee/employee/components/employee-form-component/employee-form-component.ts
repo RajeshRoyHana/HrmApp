@@ -8,6 +8,7 @@ import { ToastService } from '../../../../../shared/services/toast.service';
 import { EmployeeDto } from '../../../models/employee.models';
 import { EmployeeStateService } from '../../../services/employee-state.service';
 
+
 @Component({
   selector: 'app-employee-form-component',
   imports: [CommonModule, ReactiveFormsModule],
@@ -15,7 +16,7 @@ import { EmployeeStateService } from '../../../services/employee-state.service';
   styleUrl: './employee-form-component.css',
 })
 export class EmployeeFormComponent implements OnInit {
-  state = inject(EmployeeStateService);
+  employeeService = inject(EmployeeStateService);
   dd = inject(DropdownService);
   private fb = inject(FormBuilder);
   private fileUtil = inject(FileUtilService);
@@ -26,9 +27,9 @@ export class EmployeeFormComponent implements OnInit {
 
 
   constructor() {
-    this.buildForm();
+    this.employeeForm();
     effect(() => {
-      const emp = this.state.selectedEmployee();
+      const emp = this.employeeService.selectedEmployee();
       if (emp) { this.patchForm(emp); }
     });
   }
@@ -50,10 +51,10 @@ export class EmployeeFormComponent implements OnInit {
 
   ngOnInit() {
     this.dd.loadAll();
-    this.state.loadList();
+    this.employeeService.loadList();
   }
 
-  private buildForm() {
+  private employeeForm() {
     this.form = this.fb.group({
       idClient: [environment.idClient],
       id: [0],
@@ -63,19 +64,25 @@ export class EmployeeFormComponent implements OnInit {
       fatherName: ['', Validators.maxLength(250)],
       motherName: ['', Validators.maxLength(250)],
       idReportingManager: [null],
-      idJobType: [null], idEmployeeType: [null],
-      birthDate: [null], joiningDate: [null],
-      idGender: [null], idReligion: [null],
+      idJobType: [null],
+      idEmployeeType: [null],
+      birthDate: [null],
+      joiningDate: [null],
+      idGender: [null],
+      idReligion: [null],
       idDepartment: [null, Validators.required],
       idSection: [null, Validators.required],
       idDesignation: [null],
-      hasOvertime: [false], hasAttendenceBonus: [false],
+      hasOvertime: [false],
+      hasAttendenceBonus: [false],
       idWeekOff: [null],
       address: ['', Validators.maxLength(250)],
       presentAddress: ['', Validators.maxLength(250)],
-      nationalIdentificationNumber: ['', [Validators.maxLength(30),Validators.pattern('^[0-9]*$')]],
-      contactNo: ['', [Validators.maxLength(250),Validators.pattern('^[0-9]*$')]],
-      idMaritalStatus: [null], isActive: [true], createdBy: [''],
+      nationalIdentificationNumber: ['', [Validators.maxLength(30), Validators.pattern('^[0-9]*$')]],
+      contactNo: ['', [Validators.maxLength(250), Validators.pattern('^[0-9]*$')]],
+      idMaritalStatus: [null],
+      isActive: [true],
+      createdBy: [''],
       employeeFamilyInfos: this.fb.array([]),
       employeeEducationInfos: this.fb.array([]),
       employeeDocuments: this.fb.array([]),
@@ -88,6 +95,13 @@ export class EmployeeFormComponent implements OnInit {
     this.educationArray.clear();
     this.documentArray.clear();
     this.certificationArray.clear();
+    
+    if (emp.employeeImage && emp.employeeImage.trim() !== '') {
+      this.imagePreview.set(
+        this.fileUtil.base64ToUrl(emp.employeeImage)
+      );
+    }
+
     this.form.patchValue({
       ...emp,
       birthDate: emp.birthDate?.substring(0, 10) ?? null,
@@ -193,25 +207,32 @@ export class EmployeeFormComponent implements OnInit {
     if (!nc?.value) nc?.setValue(file.name.split('.')[0]);
   }
 
-  onImageSelected(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    this.imagePreview.set(reader.result as string);
-  };
-  reader.readAsDataURL(file);
-}
+  async onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const baseFile = await this.fileUtil.toBase64(file);
+
+    // Save base64 (for API)
+    this.form.patchValue({
+      employeeImage: baseFile.base64
+    });
+
+    // Preview using base64
+    this.imagePreview.set(
+      `data:${baseFile.mimeType};base64,${baseFile.base64}`
+    );
+  }
 
   onSave() {
     this.form.markAllAsTouched();
     if (this.form.invalid) { this.toast.warning('Please fill all required fields.'); return; }
-    this.state.save(this.buildDto());
+    this.employeeService.save(this.employeeDto());
   }
 
   onReset() {
-    if (this.state.mode() === 'add') {
+    if (this.employeeService.mode() === 'add' || this.employeeService.mode() === 'edit') {
       this.form.reset({
         idClient: environment.idClient,
         isActive: true,
@@ -225,13 +246,16 @@ export class EmployeeFormComponent implements OnInit {
       this.form.markAsPristine();
       this.form.markAsUntouched();
       this.imagePreview.set(null);
+      this.employeeService.mode.set('add');
     } else {
-      const emp = this.state.selectedEmployee();
-      if (emp) { this.patchForm(emp); }
+      const emp = this.employeeService.selectedEmployee();
+      if (emp) { 
+        this.patchForm(emp); 
+      }
     }
   }
 
-  private buildDto(): EmployeeDto {
+  private employeeDto(): EmployeeDto {
     const r = this.form.getRawValue();
     return {
       ...r, idClient: environment.idClient,

@@ -11,10 +11,4 @@ import { EmployeeListComponent } from '../employee-list-component/employee-list-
   styleUrl: './employee-page-component.css',
 })
 export class EmployeePageComponent {
-  state = inject(EmployeeStateService);
-  sidebarOpen = signal(false);
-
-  closeSidebar() {
-    if (window.innerWidth < 768) this.sidebarOpen.set(false);
-  }
 }

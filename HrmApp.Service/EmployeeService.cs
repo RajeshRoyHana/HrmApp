@@ -3,6 +3,7 @@ using HrmApp.Services.DataContext;
 using HrmApp.Services.Interfaces;
 using HrmApp.Shared.Dtos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace HrmApp.Services
 {
@@ -44,6 +45,7 @@ namespace HrmApp.Services
                     EmployeeNameBangla = employee.EmployeeNameBangla,
                     FatherName = employee.FatherName,
                     MotherName = employee.MotherName,
+                    EmployeeImage = (employee.EmployeeImage != null && employee.EmployeeImage.Length > 0) ?  Convert.ToBase64String(employee.EmployeeImage) : null,
                     IdReportingManager = employee.IdReportingManager,
                     IdJobType = employee.IdJobType,
                     IdEmployeeType = employee.IdEmployeeType,

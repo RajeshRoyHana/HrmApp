@@ -3,6 +3,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { EmployeeStateService } from '../../../services/employee-state.service';
 
+
 @Component({
   selector: 'app-employee-list-component',
   imports: [CommonModule, RouterModule],
@@ -10,23 +11,23 @@ import { EmployeeStateService } from '../../../services/employee-state.service';
   styleUrl: './employee-list-component.css',
 })
 export class EmployeeListComponent implements OnInit {
-  state = inject(EmployeeStateService);
+  employeeService = inject(EmployeeStateService);
 
   ngOnInit() {
-    this.state.loadList();
+    this.employeeService.loadList();
   }
 
   selectEmployee(id: number) {
-    this.state.selectEmployee(id);
+    this.employeeService.selectEmployee(id);
   }
 
   addNew() {
-    this.state.startNew();
+    this.employeeService.startNew();
   }
 
   deleteEmployee(emp: any) {
     if (confirm(`Delete "${emp.employeeName}"? This action cannot be undone.`)) {
-      this.state.deleteEmployee(emp.id);
+      this.employeeService.deleteEmployee(emp.id);
     }
   }
 
