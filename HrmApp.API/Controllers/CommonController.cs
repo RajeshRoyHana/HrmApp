@@ -96,5 +96,11 @@ namespace HrmApp.API.Controllers
             var data = await _commonService.EducationExaminationsAsync(idClient, cancellationToken);
             return Ok(data);
         }
+        [HttpGet("educationresultsdropdown")]
+        public async Task<ActionResult<List<DropdownDto>>> EducationResultsDropDown([FromQuery] int idClient, CancellationToken cancellationToken)
+        {
+            var data = await _commonService.GetEducationResultAsync(idClient, cancellationToken);
+            return Ok(data);
+        }
     }
 }

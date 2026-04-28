@@ -176,5 +176,18 @@ namespace HrmApp.Services
                                  .ToListAsync(cancellationToken);
             return data;
         }
+        public async Task<List<DropdownDto>> GetEducationResultAsync(int idClient, CancellationToken cancellationToken)
+        {
+            var data = await _context.EducationResults
+                                 .AsNoTracking()
+                                 .Where(c => c.IdClient == idClient)
+                                 .Select(s => new DropdownDto
+                                 {
+                                     Value = s.Id,
+                                     Text = s.ResultName ?? string.Empty
+                                 })
+                                 .ToListAsync(cancellationToken);
+            return data;
+        }
     }
 }

@@ -74,6 +74,12 @@ export class EmployeeApiService {
     });
   }
 
+  getEducationResults(): Observable<DropdownDto[]> {
+    return this.http.get<DropdownDto[]>(`${this.base}common/educationresultsdropdown`, {
+      params: { idClient: this.idClient }
+    });
+  }
+
   // ── Employee CRUD ─────────────────────────────────────────────
   getEmployeeList(): Observable<EmployeeListDto[]> {
     return this.http.get<EmployeeListDto[]>(`${this.base}employee`, {

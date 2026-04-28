@@ -14,15 +14,24 @@ import { EmployeeStateService } from '../../../services/employee-state.service';
   templateUrl: './employee-form-component.html',
   styleUrl: './employee-form-component.css',
 })
-export class EmployeeFormComponent implements OnInit{
+export class EmployeeFormComponent implements OnInit {
   state = inject(EmployeeStateService);
   dd = inject(DropdownService);
   private fb = inject(FormBuilder);
   private fileUtil = inject(FileUtilService);
   private toast = inject(ToastService);
 
-  isViewOnly = signal(false);
   form!: FormGroup;
+  imagePreview = signal<string | null>(null);
+
+
+  constructor() {
+    this.buildForm();
+    effect(() => {
+      const emp = this.state.selectedEmployee();
+      if (emp) { this.patchForm(emp); }
+    });
+  }
 
   get familyArray(): FormArray { return this.form.get('employeeFamilyInfos') as FormArray; }
   get educationArray(): FormArray { return this.form.get('employeeEducationInfos') as FormArray; }
@@ -38,23 +47,16 @@ export class EmployeeFormComponent implements OnInit{
     return !!(c?.invalid && c.touched);
   }
   asGroup(ctrl: AbstractControl): FormGroup { return ctrl as FormGroup; }
-  toggleViewMode() { this.isViewOnly.update(v => !v); }
 
   ngOnInit() {
-    this.buildForm();
     this.dd.loadAll();
     this.state.loadList();
-    effect(() => {
-      const emp = this.state.selectedEmployee();
-      const mode = this.state.mode();
-      if (emp) { this.patchForm(emp); this.isViewOnly.set(mode === 'edit'); }
-    }, { allowSignalWrites: true });
   }
 
   private buildForm() {
     this.form = this.fb.group({
       idClient: [environment.idClient],
-      id: [null],
+      id: [0],
       employeeName: ['', [Validators.required, Validators.maxLength(250)]],
       employeeNameBangla: ['', Validators.maxLength(250)],
       employeeImage: [null],
@@ -64,15 +66,15 @@ export class EmployeeFormComponent implements OnInit{
       idJobType: [null], idEmployeeType: [null],
       birthDate: [null], joiningDate: [null],
       idGender: [null], idReligion: [null],
-      idDepartment: ['', Validators.required],
-      idSection: ['', Validators.required],
+      idDepartment: [null, Validators.required],
+      idSection: [null, Validators.required],
       idDesignation: [null],
       hasOvertime: [false], hasAttendenceBonus: [false],
       idWeekOff: [null],
       address: ['', Validators.maxLength(250)],
       presentAddress: ['', Validators.maxLength(250)],
-      nationalIdentificationNumber: ['', Validators.maxLength(30)],
-      contactNo: ['', Validators.maxLength(250)],
+      nationalIdentificationNumber: ['', [Validators.maxLength(30),Validators.pattern('^[0-9]*$')]],
+      contactNo: ['', [Validators.maxLength(250),Validators.pattern('^[0-9]*$')]],
       idMaritalStatus: [null], isActive: [true], createdBy: [''],
       employeeFamilyInfos: this.fb.array([]),
       employeeEducationInfos: this.fb.array([]),
@@ -82,8 +84,10 @@ export class EmployeeFormComponent implements OnInit{
   }
 
   private patchForm(emp: EmployeeDto) {
-    this.familyArray.clear(); this.educationArray.clear();
-    this.documentArray.clear(); this.certificationArray.clear();
+    this.familyArray.clear();
+    this.educationArray.clear();
+    this.documentArray.clear();
+    this.certificationArray.clear();
     this.form.patchValue({
       ...emp,
       birthDate: emp.birthDate?.substring(0, 10) ?? null,
@@ -131,10 +135,10 @@ export class EmployeeFormComponent implements OnInit{
 
   addFamily() {
     this.familyArray.push(this.fb.group({
-      id: [null], idEmployee: [0],
+      id: [0], idEmployee: [0],
       name: ['', [Validators.required, Validators.maxLength(50)]],
       idRelationship: ['', Validators.required],
-      idGender: ['', Validators.required],
+      idGender: [0, Validators.required],
       dateOfBirth: [null], contactNo: ['', Validators.maxLength(50)],
       currentAddress: ['', Validators.maxLength(500)],
       permanentAddress: ['', Validators.maxLength(500)],
@@ -143,10 +147,10 @@ export class EmployeeFormComponent implements OnInit{
 
   addEducation() {
     this.educationArray.push(this.fb.group({
-      id: [null], idEmployee: [0],
+      id: [0], idEmployee: [0],
       idEducationLevel: ['', Validators.required],
       idEducationExamination: ['', Validators.required],
-      idEducationResult: ['', Validators.required],
+      idEducationResult: [0, Validators.required],
       major: ['', [Validators.required, Validators.maxLength(50)]],
       passingYear: ['', Validators.required],
       instituteName: ['', [Validators.required, Validators.maxLength(250)]],
@@ -158,7 +162,7 @@ export class EmployeeFormComponent implements OnInit{
 
   addDocument() {
     this.documentArray.push(this.fb.group({
-      id: [null], idEmployee: [0],
+      id: [0], idEmployee: [0],
       documentName: ['', [Validators.required, Validators.maxLength(200)]],
       fileName: ['', [Validators.required, Validators.maxLength(100)]],
       uploadDate: [new Date().toISOString().substring(0, 10)],
@@ -169,7 +173,7 @@ export class EmployeeFormComponent implements OnInit{
 
   addCertification() {
     this.certificationArray.push(this.fb.group({
-      id: [null], idEmployee: [0],
+      id: [0], idEmployee: [0],
       certificationTitle: ['', [Validators.required, Validators.maxLength(255)]],
       certificationInstitute: ['', [Validators.required, Validators.maxLength(250)]],
       instituteLocation: ['', [Validators.required, Validators.maxLength(250)]],
@@ -189,21 +193,17 @@ export class EmployeeFormComponent implements OnInit{
     if (!nc?.value) nc?.setValue(file.name.split('.')[0]);
   }
 
-  imagePreview: string | ArrayBuffer | null = null;
-
   onImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    this.imagePreview.set(reader.result as string);
+  };
+  reader.readAsDataURL(file);
+}
 
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  }
   onSave() {
     this.form.markAllAsTouched();
     if (this.form.invalid) { this.toast.warning('Please fill all required fields.'); return; }
@@ -211,8 +211,24 @@ export class EmployeeFormComponent implements OnInit{
   }
 
   onReset() {
-    if (this.state.mode() === 'add') { this.buildForm(); this.state.startNew(); }
-    else { const e = this.state.selectedEmployee(); if (e) { this.patchForm(e); this.isViewOnly.set(true); } }
+    if (this.state.mode() === 'add') {
+      this.form.reset({
+        idClient: environment.idClient,
+        isActive: true,
+        hasOvertime: false,
+        hasAttendenceBonus: false,
+      });
+      this.familyArray.clear();
+      this.educationArray.clear();
+      this.documentArray.clear();
+      this.certificationArray.clear();
+      this.form.markAsPristine();
+      this.form.markAsUntouched();
+      this.imagePreview.set(null);
+    } else {
+      const emp = this.state.selectedEmployee();
+      if (emp) { this.patchForm(emp); }
+    }
   }
 
   private buildDto(): EmployeeDto {
@@ -238,3 +254,4 @@ export class EmployeeFormComponent implements OnInit{
     };
   }
 }
+

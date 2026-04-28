@@ -10,7 +10,6 @@ export class EmployeeStateService {
   private api = inject(EmployeeApiService);
   private toast = inject(ToastService);
 
-  // ── Signals ───────────────────────────────────────────────────
   readonly employeeList = signal<EmployeeListDto[]>([]);
   readonly selectedEmployee = signal<EmployeeDto | null>(null);
   readonly mode = signal<FormMode>('add');
@@ -27,7 +26,6 @@ export class EmployeeStateService {
     );
   });
 
-  // ── Actions ───────────────────────────────────────────────────
   loadList(): void {
     this.loading.set(true);
     this.api.getEmployeeList().subscribe({
@@ -40,8 +38,8 @@ export class EmployeeStateService {
     this.loading.set(true);
     this.api.getEmployeeDetails(id).subscribe({
       next: emp => {
-        this.selectedEmployee.set(emp);
         this.mode.set('edit');
+        this.selectedEmployee.set(emp);   // set AFTER mode so effect sees correct mode
         this.loading.set(false);
       },
       error: () => { this.toast.error('Failed to load employee details'); this.loading.set(false); }
@@ -49,6 +47,9 @@ export class EmployeeStateService {
   }
 
   startNew(): void {
+    this.mode.set('add');
+    // FIX: set a fresh object so the effect in the form component fires
+    // and clears / resets all fields correctly
     this.selectedEmployee.set({
       idClient: environment.idClient,
       employeeName: null,
@@ -60,7 +61,6 @@ export class EmployeeStateService {
       employeeFamilyInfos: [],
       employeeProfessionalCertifications: []
     });
-    this.mode.set('add');
   }
 
   save(dto: EmployeeDto): void {
@@ -95,7 +95,5 @@ export class EmployeeStateService {
     });
   }
 
-  reset(): void {
-    this.startNew();
-  }
+  reset(): void { this.startNew(); }
 }

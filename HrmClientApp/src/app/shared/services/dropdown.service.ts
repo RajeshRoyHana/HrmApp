@@ -17,6 +17,7 @@ export interface DropdownStore {
   relationships: DropdownDto[];
   educationLevels: DropdownDto[];
   educationExaminations: DropdownDto[];
+  educationResults: DropdownDto[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,7 +28,7 @@ export class DropdownService {
     departments: [], sections: [], designations: [],
     genders: [], religions: [], maritalStatuses: [],
     jobTypes: [], employeeTypes: [], weekOffs: [],
-    relationships: [], educationLevels: [], educationExaminations: []
+    relationships: [], educationLevels: [], educationExaminations: [], educationResults: []
   });
 
   readonly loaded = signal(false);
@@ -46,7 +47,8 @@ export class DropdownService {
       weekOffs: this.api.getWeekOffs(),
       relationships: this.api.getRelationships(),
       educationLevels: this.api.getEducationLevels(),
-      educationExaminations: this.api.getEducationExaminations()
+      educationExaminations: this.api.getEducationExaminations(),
+      educationResults: this.api.getEducationResults()
     }).subscribe(data => {
       this.store.set(data);
       this.loaded.set(true);

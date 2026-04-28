@@ -17,5 +17,6 @@ namespace HrmApp.Services.Interfaces
         Task<List<DropdownDto>> RelationshipsAsync(int idClient, CancellationToken cancellationToken);
         Task<List<DropdownDto>> EducationExaminationsAsync(int idClient, CancellationToken cancellationToken);
         Task<List<DropdownDto>> EducationLevelsAsync(int idClient, CancellationToken cancellationToken);
+        Task<List<DropdownDto>> GetEducationResultAsync(int idClient, CancellationToken cancellationToken);
     }
 }
