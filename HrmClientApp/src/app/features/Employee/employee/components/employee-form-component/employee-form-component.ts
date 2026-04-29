@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, AbstractControl, Validators, ValidatorFn, ValidationErrors, FormControl } from '@angular/forms';
 import { environment } from '../../../../../../environments/environment';
 import { DropdownService } from '../../../../../shared/services/dropdown.service';
@@ -28,6 +28,7 @@ export class EmployeeFormComponent implements OnInit {
   imagePreview = signal<string | null>(null);
 
   private readonly _tick = signal(0);
+  @ViewChild('employeeImageInput') employeeImageInput!: ElementRef<HTMLInputElement>;
 
   // FIX: track last mode to prevent double-fire of effect
   private lastMode = '';
@@ -76,17 +77,15 @@ export class EmployeeFormComponent implements OnInit {
        
       } else if (mode === 'edit' && emp) {
         this.form.enable();
-    
-         setTimeout(() => {
-            this.enableAllFormArray();
-       }, 350); 
-        this.patchForm(emp);
+   
+        this.updatePatchForm(emp);
+        
 
       } else if (mode === 'view' && emp) {
-         this.patchForm(emp);
+       this.patchForm(emp);
        setTimeout(() => {
         this.form.disable();
-        this.disableAllFormArray();
+        //this.disableAllFormArray();
        }, 350); 
         
         
@@ -295,7 +294,74 @@ export class EmployeeFormComponent implements OnInit {
       birthDate:   emp.birthDate?.substring(0, 10)   ?? null,
       joiningDate: emp.joiningDate?.substring(0, 10) ?? null,
     });
+    setTimeout(()=>{ emp.employeeFamilyInfos?.forEach(f => this.familyArray.push(this.fb.group({
+      id: [f.id], idEmployee: [f.idEmployee],
+      name:             [f.name, [Validators.required, Validators.maxLength(50)]],
+      idRelationship:   [f.idRelationship, Validators.required],
+      idGender:         [f.idGender, Validators.required],
+      dateOfBirth:      [f.dateOfBirth?.substring(0, 10) ?? null],
+      contactNo:        [f.contactNo, Validators.maxLength(50)],
+      currentAddress:   [f.currentAddress, Validators.maxLength(500)],
+      permanentAddress: [f.permanentAddress, Validators.maxLength(500)],
+    }))); });
+    
+    setTimeout(() => {
+       emp.employeeEducationInfos?.forEach(e => this.educationArray.push(this.fb.group({
+      id: [e.id], idEmployee: [e.idEmployee],
+      idEducationLevel:       [e.idEducationLevel, Validators.required],
+      idEducationExamination: [e.idEducationExamination, Validators.required],
+      idEducationResult:      [e.idEducationResult, Validators.required],
+      major:         [e.major, [Validators.required, Validators.maxLength(50)]],
+      passingYear:   [e.passingYear, Validators.required],
+      instituteName: [e.instituteName, [Validators.required, Validators.maxLength(250)]],
+      isForeignInstitute: [e.isForeignInstitute ?? false],
+      cgpa: [e.cgpa], examScale: [e.examScale], marks: [e.marks],
+      duration: [e.duration], achievement: [e.achievement, Validators.maxLength(500)],
+    })));
+    });
+   
+     setTimeout(() => {
+       emp.employeeDocuments?.forEach(d => this.documentArray.push(this.fb.group({
+      id: [d.id], idEmployee: [d.idEmployee],
+      documentName:          [d.documentName, [Validators.required, Validators.maxLength(200)]],
+      fileName:              [d.fileName, [Validators.required, Validators.maxLength(100)]],
+      uploadDate:            [d.uploadDate?.substring(0, 10)],
+      uploadedFileExtention: [d.uploadedFileExtention, Validators.maxLength(10)],
+      uploadedFile:          [d.uploadedFile],
+    })));
+    });
 
+   
+
+     setTimeout(() => {
+         emp.employeeProfessionalCertifications?.forEach(c => this.certificationArray.push(this.fb.group({
+      id: [c.id], idEmployee: [c.idEmployee],
+      certificationTitle:     [c.certificationTitle, [Validators.required, Validators.maxLength(255)]],
+      certificationInstitute: [c.certificationInstitute, [Validators.required, Validators.maxLength(250)]],
+      instituteLocation:      [c.instituteLocation, [Validators.required, Validators.maxLength(250)]],
+      fromDate: [c.fromDate?.substring(0, 10), Validators.required],
+      toDate:   [c.toDate?.substring(0, 10) ?? null],
+    }, { validators: this.dateRangeValidator })));
+    });
+ 
+  }
+   private updatePatchForm(emp: EmployeeDto) {
+    this.familyArray.clear();
+    this.educationArray.clear();
+    this.documentArray.clear();
+    this.certificationArray.clear();
+
+    if (emp.employeeImage?.trim()) {
+      this.imagePreview.set(this.fileUtil.base64ToUrl(emp.employeeImage));
+    } else {
+      this.imagePreview.set(null);
+    }
+
+    this.form.patchValue({
+      ...emp,
+      birthDate:   emp.birthDate?.substring(0, 10)   ?? null,
+      joiningDate: emp.joiningDate?.substring(0, 10) ?? null,
+    });
     emp.employeeFamilyInfos?.forEach(f => this.familyArray.push(this.fb.group({
       id: [f.id], idEmployee: [f.idEmployee],
       name:             [f.name, [Validators.required, Validators.maxLength(50)]],
@@ -306,8 +372,9 @@ export class EmployeeFormComponent implements OnInit {
       currentAddress:   [f.currentAddress, Validators.maxLength(500)],
       permanentAddress: [f.permanentAddress, Validators.maxLength(500)],
     })));
-
-    emp.employeeEducationInfos?.forEach(e => this.educationArray.push(this.fb.group({
+    
+  
+       emp.employeeEducationInfos?.forEach(e => this.educationArray.push(this.fb.group({
       id: [e.id], idEmployee: [e.idEmployee],
       idEducationLevel:       [e.idEducationLevel, Validators.required],
       idEducationExamination: [e.idEducationExamination, Validators.required],
@@ -320,7 +387,9 @@ export class EmployeeFormComponent implements OnInit {
       duration: [e.duration], achievement: [e.achievement, Validators.maxLength(500)],
     })));
 
-    emp.employeeDocuments?.forEach(d => this.documentArray.push(this.fb.group({
+   
+
+       emp.employeeDocuments?.forEach(d => this.documentArray.push(this.fb.group({
       id: [d.id], idEmployee: [d.idEmployee],
       documentName:          [d.documentName, [Validators.required, Validators.maxLength(200)]],
       fileName:              [d.fileName, [Validators.required, Validators.maxLength(100)]],
@@ -329,7 +398,10 @@ export class EmployeeFormComponent implements OnInit {
       uploadedFile:          [d.uploadedFile],
     })));
 
-    emp.employeeProfessionalCertifications?.forEach(c => this.certificationArray.push(this.fb.group({
+   
+
+  
+         emp.employeeProfessionalCertifications?.forEach(c => this.certificationArray.push(this.fb.group({
       id: [c.id], idEmployee: [c.idEmployee],
       certificationTitle:     [c.certificationTitle, [Validators.required, Validators.maxLength(255)]],
       certificationInstitute: [c.certificationInstitute, [Validators.required, Validators.maxLength(250)]],
@@ -337,6 +409,8 @@ export class EmployeeFormComponent implements OnInit {
       fromDate: [c.fromDate?.substring(0, 10), Validators.required],
       toDate:   [c.toDate?.substring(0, 10) ?? null],
     }, { validators: this.dateRangeValidator })));
+
+ 
   }
 
   private dateRangeValidator(group: AbstractControl) {
@@ -348,25 +422,11 @@ export class EmployeeFormComponent implements OnInit {
     return null;
   }
 
-  private setDetailArraysState(enable: boolean) {
-  const arrays = [
-    this.familyArray,
-    this.educationArray,
-    this.documentArray,
-    this.certificationArray
-  ];
 
-  arrays.forEach(arr => {
-    if (enable) {
-      arr.enable({ emitEvent: false });
-      arr.controls.forEach(ctrl => ctrl.enable({ emitEvent: false }));
-    } else {
-      arr.disable({ emitEvent: false });
-      arr.controls.forEach(ctrl => ctrl.disable({ emitEvent: false }));
-    }
-    arr.updateValueAndValidity({ emitEvent: false });
-  });
-}
+
+
+
+
 
   // ── Add row helpers ───────────────────────────────────────────
   addFamily() {
@@ -376,7 +436,7 @@ export class EmployeeFormComponent implements OnInit {
       idRelationship:   ['', Validators.required],
       idGender:         ['', Validators.required],
       dateOfBirth:      [null],
-      contactNo:        ['', Validators.maxLength(50)],
+      contactNo:        ['', [Validators.maxLength(16), Validators.pattern(/^\+?[1-9]\d{1,14}$/)]],
       currentAddress:   ['', Validators.maxLength(500)],
       permanentAddress: ['', Validators.maxLength(500)],
     }));
@@ -446,6 +506,7 @@ export class EmployeeFormComponent implements OnInit {
     this.form.patchValue({ employeeImage: baseFile.base64 });
     this.imagePreview.set(`data:${baseFile.mimeType};base64,${baseFile.base64}`);
   }
+
 
   // ── Toolbar actions ───────────────────────────────────────────
   onClickAdd()  { 

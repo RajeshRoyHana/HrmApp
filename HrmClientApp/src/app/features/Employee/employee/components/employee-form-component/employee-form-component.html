@@ -251,11 +251,19 @@
   
           <div class="col-lg-3 col-md-6">
             <label class="field-label">EMPLOYEE IMAGE (JPG, PNG)</label>
-            <input type="file" class="form-control fld" accept="image/*"
+            <input type="file" id="#employeeImageInput" class="form-control fld" accept="image/*"
                    (change)="onImageSelected($event)">
-            @if (imagePreview()) {
-              <img [src]="imagePreview()" class="img-preview mt-1" alt="Preview">
+            
+          @if (imagePreview()) {
+              <div class="img-hover-box mt-2">
+                <img [src]="imagePreview()" class="img-preview" alt="Preview">
+
+                <div class="img-zoom-preview top-preview">
+                  <img [src]="imagePreview()" alt="Large Preview">
+                </div>
+              </div>
             }
+
           </div>
 
           <div class="col-12">
@@ -478,8 +486,9 @@
               <thead>
                 <tr>
                   <th class="th-num">#</th>
-                  <th>DOCUMENT NAME <span class="req">*</span></th>
                   <th>FILE <span class="req">*</span></th>
+                  <th>DOCUMENT NAME <span class="req">*</span></th>
+                  
                   <th>UPLOAD DATE <span class="req">*</span></th>
                   <th>EXT</th>
                   @if (!isReadonly()) { <th class="th-act"></th> }
@@ -497,11 +506,7 @@
                 @for (row of documentArray.controls; track $index; let i = $index) {
                   <tr [formGroupName]="i">
                     <td class="text-center td-num">{{ i + 1 }}</td>
-                    <td>
-                      <input type="text" class="ti" formControlName="documentName"
-                             maxlength="200"
-                             [class.ti-err]="tblErr(documentArray, i, 'documentName')">
-                    </td>
+                   
                     <td>
                       @if (!isReadonly()) {
                         <label class="file-lbl">
@@ -517,6 +522,11 @@
                           {{ asGroup(documentArray.at(i)).get('fileName')?.value }}
                         </span>
                       }
+                    </td>
+                     <td>
+                      <input type="text" class="ti" formControlName="documentName"
+                             maxlength="200"
+                             [class.ti-err]="tblErr(documentArray, i, 'documentName')" readonly>
                     </td>
                     <td><input type="date" class="ti" formControlName="uploadDate"></td>
                     <td>

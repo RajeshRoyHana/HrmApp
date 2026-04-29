@@ -68,15 +68,15 @@ export class EmployeeStateService {
     }
   }
 
-  cancelWithRemove(): void{
-       const prev = this.selectedEmployee();
-    if (prev?.id) {
-      this.selectEmployee(prev.id);
-    } else {
-      this.mode.set('disabled');
-      this.selectedEmployee.set(null);
-    }
-  }
+  // cancelWithRemove(): void{
+  //      const prev = this.selectedEmployee();
+  //   if (prev?.id) {
+  //     this.selectEmployee(prev.id);
+  //   } else {
+  //     this.mode.set('disabled');
+  //     this.selectedEmployee.set(null);
+  //   }
+  // }
 
   cancelEdit(): void {
     const prev = this.selectedEmployee();
@@ -105,7 +105,6 @@ export class EmployeeStateService {
         } else {
           const newId = res?.employeeId ?? 0;
           if (newId) {
-            console.log(newId)
             this.selectEmployee(newId);
           } else {
             this.mode.set('disabled');

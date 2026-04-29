@@ -27,7 +27,7 @@ namespace HrmApp.Services
                     IdClient = e.IdClient,
                     EmployeeName = e.EmployeeName,
                     DesignationName = e.Designation != null ? e.Designation.DesignationName : "N/A"
-                })
+                }).OrderBy(e=>e.Id)
                 .ToListAsync(cancellationToken);
 
             return data;
@@ -251,6 +251,9 @@ namespace HrmApp.Services
 
         public async Task<bool> UpdateEmployeeAsync(EmployeeDto dto, CancellationToken cancellationToken)
         {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
             if (dto.IdClient <= 0 || dto.Id <= 0)
                 throw new ArgumentException("Invalid client or employee id.");
 
@@ -267,13 +270,36 @@ namespace HrmApp.Services
             if (employee == null)
                 return false;
 
+            // Local helper for base64 conversion
+            static byte[]? DecodeBase64OrNull(string? base64)
+            {
+                if (string.IsNullOrWhiteSpace(base64))
+                    return null;
+
+                try
+                {
+                    return Convert.FromBase64String(base64);
+                }
+                catch (FormatException)
+                {
+                    throw new ArgumentException("Invalid base64 string received.");
+                }
+            }
+
+            // =========================================================
+            // MASTER EMPLOYEE UPDATE
+            // =========================================================
             employee.EmployeeName = dto.EmployeeName;
             employee.EmployeeNameBangla = dto.EmployeeNameBangla;
             employee.FatherName = dto.FatherName;
             employee.MotherName = dto.MotherName;
-            employee.EmployeeImage = !string.IsNullOrEmpty(dto.EmployeeImage)
-                ? Convert.FromBase64String(dto.EmployeeImage)
-                : employee.EmployeeImage;
+
+            var employeeImageBytes = DecodeBase64OrNull(dto.EmployeeImage);
+            if (employeeImageBytes != null)
+            {
+                employee.EmployeeImage = employeeImageBytes;
+            }
+
             employee.IdReportingManager = dto.IdReportingManager;
             employee.IdJobType = dto.IdJobType;
             employee.IdEmployeeType = dto.IdEmployeeType;
@@ -293,196 +319,239 @@ namespace HrmApp.Services
             employee.IdMaritalStatus = dto.IdMaritalStatus;
             employee.IsActive = dto.IsActive ?? employee.IsActive;
 
-            // EmployeeDocuments
-            var dtoDocIds = dto.EmployeeDocuments.Where(d => d.Id > 0).Select(d => d.Id).ToHashSet();
-
-            var docsToRemove = employee.EmployeeDocuments
-                .Where(d => !dtoDocIds.Contains(d.Id))
-                .ToList();
-
-            foreach (var doc in docsToRemove)
+            // =========================================================
+            // EMPLOYEE DOCUMENTS
+            // Only sync if DTO list is not null
+            // null  => no change
+            // empty => delete all existing rows
+            // =========================================================
+            if (dto.EmployeeDocuments != null)
             {
-                employee.EmployeeDocuments.Remove(doc);
-            }
+                var dtoDocIds = dto.EmployeeDocuments
+                    .Where(d => d.Id > 0)
+                    .Select(d => d.Id)
+                    .ToHashSet();
 
-            foreach (var doc in dto.EmployeeDocuments)
-            {
-                var existingDoc = doc.Id > 0
-                    ? employee.EmployeeDocuments.FirstOrDefault(d => d.Id == doc.Id)
-                    : null;
+                var docsToRemove = employee.EmployeeDocuments
+                    .Where(dbDoc => !dtoDocIds.Contains(dbDoc.Id))
+                    .ToList();
 
-                if (existingDoc != null)
+                if (docsToRemove.Count > 0)
                 {
-                    existingDoc.DocumentName = doc.DocumentName;
-                    existingDoc.FileName = doc.FileName;
-                    existingDoc.UploadedFile = !string.IsNullOrEmpty(doc.UploadedFile)
+                    _context.EmployeeDocuments.RemoveRange(docsToRemove);
+                }
+
+                foreach (var doc in dto.EmployeeDocuments)
+                {
+                    var existingDoc = doc.Id > 0
+                        ? employee.EmployeeDocuments.FirstOrDefault(d => d.Id == doc.Id)
+                        : null;
+
+                    if (existingDoc != null)
+                    {
+                        existingDoc.DocumentName = doc.DocumentName;
+                        existingDoc.FileName = doc.FileName;
+   
+                        existingDoc.UploadedFile = !string.IsNullOrEmpty(doc.UploadedFile)
                         ? Convert.FromBase64String(doc.UploadedFile)
                         : existingDoc.UploadedFile;
-                    existingDoc.UploadedFileExtention = doc.UploadedFileExtention;
-                }
-                else
-                {
-                    employee.EmployeeDocuments.Add(new EmployeeDocument
+                        existingDoc.UploadedFileExtention = doc.UploadedFileExtention;
+                    }
+                    else
                     {
-                        IdClient = dto.IdClient,
-                        IdEmployee = dto.Id,
-                        DocumentName = doc.DocumentName,
-                        FileName = doc.FileName,
-                        UploadedFile = !string.IsNullOrEmpty(doc.UploadedFile)
-                            ? Convert.FromBase64String(doc.UploadedFile)
-                            : null,
-                        UploadedFileExtention = doc.UploadedFileExtention,
-                        UploadDate = DateTime.UtcNow
-                    });
+                        employee.EmployeeDocuments.Add(new EmployeeDocument
+                        {
+                            IdClient = dto.IdClient,
+                            IdEmployee = dto.Id,
+                            DocumentName = doc.DocumentName,
+                            FileName = doc.FileName,
+                            UploadedFile = !string.IsNullOrEmpty(doc.UploadedFile)
+                                              ? Convert.FromBase64String(doc.UploadedFile)
+                                              : null,
+                            UploadedFileExtention = doc.UploadedFileExtention,
+                            UploadDate = DateTime.UtcNow
+                        });
+                    }
                 }
             }
 
-            // EmployeeEducationInfos
-            var dtoEduIds = dto.EmployeeEducationInfos.Where(e => e.Id > 0).Select(e => e.Id).ToHashSet();
-
-            var eduToRemove = employee.EmployeeEducationInfos
-                .Where(e => !dtoEduIds.Contains(e.Id))
-                .ToList();
-
-            foreach (var edu in eduToRemove)
+            // =========================================================
+            // EMPLOYEE EDUCATION INFOS
+            // null  => no change
+            // empty => delete all existing rows
+            // =========================================================
+            if (dto.EmployeeEducationInfos != null)
             {
-                employee.EmployeeEducationInfos.Remove(edu);
-            }
+                var dtoEduIds = dto.EmployeeEducationInfos
+                    .Where(e => e.Id > 0)
+                    .Select(e => e.Id)
+                    .ToHashSet();
 
-            foreach (var edu in dto.EmployeeEducationInfos)
-            {
-                var existingEdu = edu.Id > 0
-                    ? employee.EmployeeEducationInfos.FirstOrDefault(e => e.Id == edu.Id)
-                    : null;
+                var eduToRemove = employee.EmployeeEducationInfos
+                    .Where(dbEdu => !dtoEduIds.Contains(dbEdu.Id))
+                    .ToList();
 
-                if (existingEdu != null)
+                if (eduToRemove.Count > 0)
                 {
-                    existingEdu.IdEducationLevel = edu.IdEducationLevel;
-                    existingEdu.IdEducationExamination = edu.IdEducationExamination;
-                    existingEdu.IdEducationResult = edu.IdEducationResult;
-                    existingEdu.Cgpa = edu.Cgpa;
-                    existingEdu.ExamScale = edu.ExamScale;
-                    existingEdu.Marks = edu.Marks;
-                    existingEdu.Major = edu.Major;
-                    existingEdu.PassingYear = edu.PassingYear;
-                    existingEdu.InstituteName = edu.InstituteName;
-                    existingEdu.IsForeignInstitute = edu.IsForeignInstitute;
-                    existingEdu.Duration = edu.Duration;
-                    existingEdu.Achievement = edu.Achievement;
+                    _context.EmployeeEducationInfos.RemoveRange(eduToRemove);
                 }
-                else
+
+                foreach (var edu in dto.EmployeeEducationInfos)
                 {
-                    employee.EmployeeEducationInfos.Add(new EmployeeEducationInfo
+                    var existingEdu = edu.Id > 0
+                        ? employee.EmployeeEducationInfos.FirstOrDefault(e => e.Id == edu.Id)
+                        : null;
+
+                    if (existingEdu != null)
                     {
-                        IdClient = dto.IdClient,
-                        IdEmployee = dto.Id,
-                        IdEducationLevel = edu.IdEducationLevel,
-                        IdEducationExamination = edu.IdEducationExamination,
-                        IdEducationResult = edu.IdEducationResult,
-                        Cgpa = edu.Cgpa,
-                        ExamScale = edu.ExamScale,
-                        Marks = edu.Marks,
-                        Major = edu.Major,
-                        PassingYear = edu.PassingYear,
-                        InstituteName = edu.InstituteName,
-                        IsForeignInstitute = edu.IsForeignInstitute,
-                        Duration = edu.Duration,
-                        Achievement = edu.Achievement
-                    });
-                }
-            }
-
-            // EmployeeFamilyInfos
-            var dtoFamilyIds = dto.EmployeeFamilyInfos.Where(f => f.Id > 0).Select(f => f.Id).ToHashSet();
-
-            var familyToRemove = employee.EmployeeFamilyInfos
-                .Where(f => !dtoFamilyIds.Contains(f.Id))
-                .ToList();
-
-            foreach (var fam in familyToRemove)
-            {
-                employee.EmployeeFamilyInfos.Remove(fam);
-            }
-
-            foreach (var fam in dto.EmployeeFamilyInfos)
-            {
-                var existingFamily = fam.Id > 0
-                    ? employee.EmployeeFamilyInfos.FirstOrDefault(f => f.Id == fam.Id)
-                    : null;
-
-                if (existingFamily != null)
-                {
-                    existingFamily.Name = fam.Name;
-                    existingFamily.IdGender = fam.IdGender;
-                    existingFamily.IdRelationship = fam.IdRelationship;
-                    existingFamily.DateOfBirth = fam.DateOfBirth;
-                    existingFamily.ContactNo = fam.ContactNo;
-                    existingFamily.CurrentAddress = fam.CurrentAddress;
-                    existingFamily.PermanentAddress = fam.PermanentAddress;
-                    existingFamily.CreatedBy = fam.CreatedBy;
-                }
-                else
-                {
-                    employee.EmployeeFamilyInfos.Add(new EmployeeFamilyInfo
+                        existingEdu.IdEducationLevel = edu.IdEducationLevel;
+                        existingEdu.IdEducationExamination = edu.IdEducationExamination;
+                        existingEdu.IdEducationResult = edu.IdEducationResult;
+                        existingEdu.Cgpa = edu.Cgpa;
+                        existingEdu.ExamScale = edu.ExamScale;
+                        existingEdu.Marks = edu.Marks;
+                        existingEdu.Major = edu.Major;
+                        existingEdu.PassingYear = edu.PassingYear;
+                        existingEdu.InstituteName = edu.InstituteName;
+                        existingEdu.IsForeignInstitute = edu.IsForeignInstitute;
+                        existingEdu.Duration = edu.Duration;
+                        existingEdu.Achievement = edu.Achievement;
+                    }
+                    else
                     {
-                        IdClient = dto.IdClient,
-                        IdEmployee = dto.Id,
-                        Name = fam.Name,
-                        IdGender = fam.IdGender,
-                        IdRelationship = fam.IdRelationship,
-                        DateOfBirth = fam.DateOfBirth,
-                        ContactNo = fam.ContactNo,
-                        CurrentAddress = fam.CurrentAddress,
-                        PermanentAddress = fam.PermanentAddress
-                    });
+                        employee.EmployeeEducationInfos.Add(new EmployeeEducationInfo
+                        {
+                            IdClient = dto.IdClient,
+                            IdEmployee = dto.Id,
+                            IdEducationLevel = edu.IdEducationLevel,
+                            IdEducationExamination = edu.IdEducationExamination,
+                            IdEducationResult = edu.IdEducationResult,
+                            Cgpa = edu.Cgpa,
+                            ExamScale = edu.ExamScale,
+                            Marks = edu.Marks,
+                            Major = edu.Major,
+                            PassingYear = edu.PassingYear,
+                            InstituteName = edu.InstituteName,
+                            IsForeignInstitute = edu.IsForeignInstitute,
+                            Duration = edu.Duration,
+                            Achievement = edu.Achievement
+                        });
+                    }
                 }
             }
 
-
-            //CERTIFICATIONS
-            var dtoCertIds = dto.EmployeeProfessionalCertifications.Where(c => c.Id > 0).Select(c => c.Id).ToHashSet();
-
-            var certsToRemove = employee.EmployeeProfessionalCertifications
-                .Where(c => !dtoCertIds.Contains(c.Id))
-                .ToList();
-
-            foreach (var cert in certsToRemove)
+            // =========================================================
+            // EMPLOYEE FAMILY INFOS
+            // null  => no change
+            // empty => delete all existing rows
+            // =========================================================
+            if (dto.EmployeeFamilyInfos != null)
             {
-                employee.EmployeeProfessionalCertifications.Remove(cert);
-            }
+                var dtoFamilyIds = dto.EmployeeFamilyInfos
+                    .Where(f => f.Id > 0)
+                    .Select(f => f.Id)
+                    .ToHashSet();
 
-            foreach (var cert in dto.EmployeeProfessionalCertifications)
-            {
-                var existingCert = cert.Id > 0
-                    ? employee.EmployeeProfessionalCertifications.FirstOrDefault(c => c.Id == cert.Id)
-                    : null;
+                var familyToRemove = employee.EmployeeFamilyInfos
+                    .Where(dbFam => !dtoFamilyIds.Contains(dbFam.Id))
+                    .ToList();
 
-                if (existingCert != null)
+                if (familyToRemove.Count > 0)
                 {
-                    existingCert.CertificationTitle = cert.CertificationTitle;
-                    existingCert.CertificationInstitute = cert.CertificationInstitute;
-                    existingCert.InstituteLocation = cert.InstituteLocation;
-                    existingCert.FromDate = cert.FromDate;
-                    existingCert.ToDate = cert.ToDate;
+                    _context.EmployeeFamilyInfos.RemoveRange(familyToRemove);
                 }
-                else
+
+                foreach (var fam in dto.EmployeeFamilyInfos)
                 {
-                    employee.EmployeeProfessionalCertifications.Add(new EmployeeProfessionalCertification
+                    var existingFamily = fam.Id > 0
+                        ? employee.EmployeeFamilyInfos.FirstOrDefault(f => f.Id == fam.Id)
+                        : null;
+
+                    if (existingFamily != null)
                     {
-                        IdClient = dto.IdClient,
-                        IdEmployee = dto.Id,
-                        CertificationTitle = cert.CertificationTitle,
-                        CertificationInstitute = cert.CertificationInstitute,
-                        InstituteLocation = cert.InstituteLocation,
-                        FromDate = cert.FromDate,
-                        ToDate = cert.ToDate
-                    });
+                        existingFamily.Name = fam.Name;
+                        existingFamily.IdGender = fam.IdGender;
+                        existingFamily.IdRelationship = fam.IdRelationship;
+                        existingFamily.DateOfBirth = fam.DateOfBirth;
+                        existingFamily.ContactNo = fam.ContactNo;
+                        existingFamily.CurrentAddress = fam.CurrentAddress;
+                        existingFamily.PermanentAddress = fam.PermanentAddress;
+                        existingFamily.CreatedBy = fam.CreatedBy;
+                    }
+                    else
+                    {
+                        employee.EmployeeFamilyInfos.Add(new EmployeeFamilyInfo
+                        {
+                            IdClient = dto.IdClient,
+                            IdEmployee = dto.Id,
+                            Name = fam.Name,
+                            IdGender = fam.IdGender,
+                            IdRelationship = fam.IdRelationship,
+                            DateOfBirth = fam.DateOfBirth,
+                            ContactNo = fam.ContactNo,
+                            CurrentAddress = fam.CurrentAddress,
+                            PermanentAddress = fam.PermanentAddress,
+                            CreatedBy = fam.CreatedBy
+                        });
+                    }
+                }
+            }
+
+            // =========================================================
+            // EMPLOYEE PROFESSIONAL CERTIFICATIONS
+            // null  => no change
+            // empty => delete all existing rows
+            // =========================================================
+            if (dto.EmployeeProfessionalCertifications != null)
+            {
+                var dtoCertIds = dto.EmployeeProfessionalCertifications
+                    .Where(c => c.Id > 0)
+                    .Select(c => c.Id)
+                    .ToHashSet();
+
+                var certsToRemove = employee.EmployeeProfessionalCertifications
+                    .Where(dbCert => !dtoCertIds.Contains(dbCert.Id))
+                    .ToList();
+
+                if (certsToRemove.Count > 0)
+                {
+                    _context.EmployeeProfessionalCertifications.RemoveRange(certsToRemove);
+                }
+
+                foreach (var cert in dto.EmployeeProfessionalCertifications)
+                {
+                    var existingCert = cert.Id > 0
+                        ? employee.EmployeeProfessionalCertifications.FirstOrDefault(c => c.Id == cert.Id)
+                        : null;
+
+                    if (existingCert != null)
+                    {
+                        existingCert.CertificationTitle = cert.CertificationTitle;
+                        existingCert.CertificationInstitute = cert.CertificationInstitute;
+                        existingCert.InstituteLocation = cert.InstituteLocation;
+                        existingCert.FromDate = cert.FromDate;
+                        existingCert.ToDate = cert.ToDate;
+                    }
+                    else
+                    {
+                        employee.EmployeeProfessionalCertifications.Add(new EmployeeProfessionalCertification
+                        {
+                            IdClient = dto.IdClient,
+                            IdEmployee = dto.Id,
+                            CertificationTitle = cert.CertificationTitle,
+                            CertificationInstitute = cert.CertificationInstitute,
+                            InstituteLocation = cert.InstituteLocation,
+                            FromDate = cert.FromDate,
+                            ToDate = cert.ToDate
+                        });
+                    }
                 }
             }
 
             await _context.SaveChangesAsync(cancellationToken);
             return true;
         }
+
         public async Task<bool> DeleteEmployeeAsync(int idClient, int id, CancellationToken cancellationToken)
         {
             var employee = await _context.Employees
