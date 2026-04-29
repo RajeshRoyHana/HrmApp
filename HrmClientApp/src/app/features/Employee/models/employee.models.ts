@@ -106,4 +106,5 @@ export interface EmployeeDto {
   employeeProfessionalCertifications?: EmployeeProfessionalCertificationDto[];
 }
 
-export type FormMode = 'add' | 'edit' | 'view';
+export type FormMode =  'disabled' | 'add' | 'edit' | 'view';
+export type PageStatus = 'idle' | 'loading' | 'saving' | 'error';

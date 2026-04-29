@@ -3,22 +3,76 @@
   <!-- ══ TOP BAR ══ -->
   <div class="top-bar d-flex align-items-center justify-content-between px-3">
     <span class="top-bar-title">
-      {{ employeeService.mode() === 'edit' ? 'Edit Employee' : 'New Employee' }}
-      @if (employeeService.selectedEmployee()?.id) {
-        <span class="ms-2 emp-id-badge">#{{ employeeService.selectedEmployee()?.id }}</span>
+      @if (isDisabled()) { <span>Employee Form</span> }
+      @if (isView()) {
+        <span>{{ employeeService.selectedEmployee()?.employeeName }}
+          <span class="emp-id-badge ms-2">#{{ employeeService.selectedEmployee()?.id }}</span>
+        </span>
+      }
+      @if (isAdd())  { <span>New Employee</span> }
+      @if (isEdit()) {
+        <span>Edit Employee
+          <span class="emp-id-badge ms-2">#{{ employeeService.selectedEmployee()?.id }}</span>
+        </span>
       }
     </span>
+
     <div class="d-flex gap-2">
-      <button type="button" class="btn-action btn-add"
-              [disabled]="employeeService.saving()" (click)="onSave()">
-        @if (employeeService.saving()) {
-          <span class="spinner-border spinner-border-sm"></span>
-        } @else {
-          {{ employeeService.mode() === 'edit' ? 'Update' : 'Add' }}
-        }
-      </button>
-      <button type="button" class="btn-action btn-reset" (click)="onReset()">Reset</button>
-      <button type="button" class="btn-action btn-rm" (click)="deleteEmployee(employeeService.selectedEmployee())">Delete</button>
+
+      <!-- DISABLED: Add only -->
+      @if (isDisabled()) {
+        <button type="button" class="btn-action btn-add" (click)="onClickAdd()">
+          <i class="bi bi-plus-lg me-1"></i>Add
+        </button>
+      }
+
+      <!-- VIEW: Add + Edit + Delete -->
+      @if (isView()) {
+        <button type="button" class="btn-action btn-add" (click)="onClickAdd()">
+          <i class="bi bi-plus-lg me-1"></i>Add
+        </button>
+        <button type="button" class="btn-action btn-edit" (click)="onClickEdit()">
+          <i class="bi bi-pencil me-1"></i>Edit
+        </button>
+        <button type="button" class="btn-action btn-delete" (click)="onClickDelete()">
+          <i class="bi bi-trash3 me-1"></i>Delete
+        </button>
+      }
+
+      <!-- ADD: Save + Cancel -->
+      @if (isAdd()) {
+        <button type="button" class="btn-action btn-save"
+                [disabled]="employeeService.saving() || masterInvalid()"
+                (click)="onSave()">
+          @if (employeeService.saving()) {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+          } @else {
+            <i class="bi bi-floppy2 me-1"></i>
+          }
+          Save
+        </button>
+        <button type="button" class="btn-action btn-cancel" (click)="onClickCancel()">
+          <i class="bi bi-x-lg me-1"></i>Cancel
+        </button>
+      }
+
+      <!-- EDIT: Update + Cancel -->
+      @if (isEdit()) {
+        <button type="button" class="btn-action btn-save"
+                [disabled]="employeeService.saving() || masterInvalid()"
+                (click)="onSave()">
+          @if (employeeService.saving()) {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+          } @else {
+            <i class="bi bi-floppy2 me-1"></i>
+          }
+          Update
+        </button>
+        <button type="button" class="btn-action btn-cancel" (click)="onClickCancel()">
+          <i class="bi bi-x-lg me-1"></i>Cancel
+        </button>
+      }
+
     </div>
   </div>
 
@@ -43,7 +97,7 @@
             <label class="field-label">NAME (BANGLA)</label>
             <input type="text" class="form-control fld"
                    formControlName="employeeNameBangla"
-                   placeholder="বাংলায় নাম লিখুন" maxlength="250">
+                   placeholder="" maxlength="250">
           </div>
           <div class="col-lg-3 col-md-6">
             <label class="field-label">FATHER'S NAME</label>
@@ -60,26 +114,21 @@
             <label class="field-label">CONTACT NO</label>
             <input type="text" class="form-control fld"
                    formControlName="contactNo" placeholder="Contact No" maxlength="250">
-                   
-            <small class="text-danger"
-                    *ngIf="form.get('contactNo')?.hasError('pattern')">
-                Numbers only allowed
-              </small>
-
+            @if (form.get('contactNo')?.hasError('pattern') && form.get('contactNo')?.touched) {
+              <div class="err-msg">Contact number cannot exceed 15 digits.</div>
+            }
           </div>
           <div class="col-lg-3 col-md-6">
             <label class="field-label">NID NUMBER</label>
             <input type="text" class="form-control fld"
                    formControlName="nationalIdentificationNumber"
                    placeholder="National ID" maxlength="30">
-                   
-            <small class="text-danger"
-                    *ngIf="form.get('nationalIdentificationNumber')?.hasError('pattern')">
-                Numbers only allowed
-              </small>
-
+            @if (form.get('nationalIdentificationNumber')?.hasError('pattern') && form.get('nationalIdentificationNumber')?.touched) {
+              <div class="err-msg">Numbers only allowed</div>
+            }
           </div>
           <div class="col-lg-3 col-md-6">
+
             <label class="field-label">DATE OF BIRTH</label>
             <input type="date" class="form-control fld" formControlName="birthDate">
           </div>
@@ -199,6 +248,7 @@
                       placeholder="Present address" maxlength="250"></textarea>
           </div>
 
+  
           <div class="col-lg-3 col-md-6">
             <label class="field-label">EMPLOYEE IMAGE (JPG, PNG)</label>
             <input type="file" class="form-control fld" accept="image/*"
@@ -208,8 +258,7 @@
             }
           </div>
 
-          <!-- Overtime / Attendance Bonus / Active — inline -->
-          <div class="col-lg-6 col-md-6" style="margin-top:35px;">
+          <div class="col-12">
             <div class="d-flex align-items-center gap-4 flex-wrap pt-1">
               <label class="toggle-label">
                 <input type="radio" formControlName="hasOvertime" [value]="true">
@@ -228,15 +277,17 @@
             </div>
           </div>
 
-        </div><!-- /row -->
-      </div><!-- /section-body -->
-    </div><!-- /section-block -->
+        </div>
+      </div>
+    </div>
 
     <!-- ══ FAMILY INFORMATION ══ -->
     <div class="section-block">
       <div class="section-header d-flex align-items-center justify-content-between">
         <span>Family Information</span>
-        <button type="button" class="btn-add-row" (click)="addFamily()">Add Row</button>
+        @if (!isReadonly()) {
+          <button type="button" class="btn-add-row" (click)="addFamily()">Add Row</button>
+        }
       </div>
       <div class="table-wrap">
         <table class="detail-table w-100">
@@ -250,14 +301,15 @@
               <th>CONTACT NO</th>
               <th>CURRENT ADDRESS</th>
               <th>PERMANENT ADDRESS</th>
-              <th class="th-act"></th>
+              @if (!isReadonly()) { <th class="th-act"></th> }
             </tr>
           </thead>
           <tbody formArrayName="employeeFamilyInfos">
             @if (familyArray.length === 0) {
               <tr>
-                <td colspan="9" class="empty-row">
-                  No family records. Click 'Add Row' to add.
+                <td [attr.colspan]="isReadonly() ? 8 : 9" class="empty-row">
+                  No family records.
+                  @if (!isReadonly()) { Click 'Add Row' to add. }
                 </td>
               </tr>
             }
@@ -291,11 +343,13 @@
                 <td><input type="text" class="ti" formControlName="contactNo" maxlength="50"></td>
                 <td><input type="text" class="ti" formControlName="currentAddress" maxlength="500"></td>
                 <td><input type="text" class="ti" formControlName="permanentAddress" maxlength="500"></td>
-                <td class="th-act text-center">
-                  <button type="button" class="btn-rm" (click)="familyArray.removeAt(i)">
-                    <i class="bi bi-x-lg"></i>
-                  </button>
-                </td>
+                @if (!isReadonly() || !isView) {
+                  <td class="th-act text-center">
+                    <button type="button" class="btn-rm" (click)="familyArray.removeAt(i)">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </td>
+                }
               </tr>
             }
           </tbody>
@@ -307,7 +361,9 @@
     <div class="section-block">
       <div class="section-header d-flex align-items-center justify-content-between">
         <span>Education Information</span>
-        <button type="button" class="btn-add-row" (click)="addEducation()">Add Row</button>
+        @if (!isReadonly()) {
+          <button type="button" class="btn-add-row" (click)="addEducation()">Add Row</button>
+        }
       </div>
       <div class="table-wrap">
         <table class="detail-table w-100">
@@ -326,14 +382,15 @@
               <th>FOREIGN</th>
               <th>DURATION</th>
               <th>ACHIEVEMENT</th>
-              <th class="th-act"></th>
+              @if (!isReadonly()) { <th class="th-act"></th> }
             </tr>
           </thead>
           <tbody formArrayName="employeeEducationInfos">
             @if (educationArray.length === 0) {
               <tr>
-                <td colspan="14" class="empty-row">
-                  No education records. Click 'Add Row' to add.
+                <td [attr.colspan]="isReadonly() ? 13 : 14" class="empty-row">
+                  No education records.
+                  @if (!isReadonly()) { Click 'Add Row' to add. }
                 </td>
               </tr>
             }
@@ -358,7 +415,7 @@
                     }
                   </select>
                 </td>
-                 <td>
+                <td>
                   <select class="ts" formControlName="idEducationResult"
                           [class.ti-err]="tblErr(educationArray, i, 'idEducationResult')">
                     <option value="">--</option>
@@ -390,11 +447,13 @@
                 </td>
                 <td><input type="number" class="ti w70" formControlName="duration" step="0.5"></td>
                 <td><input type="text" class="ti" formControlName="achievement" maxlength="500"></td>
-                <td class="th-act text-center">
-                  <button type="button" class="btn-rm" (click)="educationArray.removeAt(i)">
-                    <i class="bi bi-x-lg"></i>
-                  </button>
-                </td>
+                @if (!isReadonly()) {
+                  <td class="th-act text-center">
+                    <button type="button" class="btn-rm" (click)="educationArray.removeAt(i)">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </td>
+                }
               </tr>
             }
           </tbody>
@@ -410,7 +469,9 @@
         <div class="section-block">
           <div class="section-header d-flex align-items-center justify-content-between">
             <span>Documents</span>
-            <button type="button" class="btn-add-row" (click)="addDocument()">Add Row</button>
+            @if (!isReadonly()) {
+              <button type="button" class="btn-add-row" (click)="addDocument()">Add Row</button>
+            }
           </div>
           <div class="table-wrap">
             <table class="detail-table w-100">
@@ -421,14 +482,15 @@
                   <th>FILE <span class="req">*</span></th>
                   <th>UPLOAD DATE <span class="req">*</span></th>
                   <th>EXT</th>
-                  <th class="th-act"></th>
+                  @if (!isReadonly()) { <th class="th-act"></th> }
                 </tr>
               </thead>
               <tbody formArrayName="employeeDocuments">
                 @if (documentArray.length === 0) {
                   <tr>
-                    <td colspan="6" class="empty-row">
-                      No documents. Click 'Add Row' to upload.
+                    <td [attr.colspan]="isReadonly() ? 5 : 6" class="empty-row">
+                      No documents.
+                      @if (!isReadonly()) { Click 'Add Row' to upload. }
                     </td>
                   </tr>
                 }
@@ -441,25 +503,33 @@
                              [class.ti-err]="tblErr(documentArray, i, 'documentName')">
                     </td>
                     <td>
-                      <label class="file-lbl">
-                        <input type="file" class="d-none"
-                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                               (change)="onDocFile($event, i)">
-                        <span class="file-name-text">
-                          {{ asGroup(documentArray.at(i)).get('fileName')?.value || 'Choose file...' }}
+                      @if (!isReadonly()) {
+                        <label class="file-lbl">
+                          <input type="file" class="d-none"
+                                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                 (change)="onDocFile($event, i)">
+                          <span class="file-name-text">
+                            {{ asGroup(documentArray.at(i)).get('fileName')?.value || 'Choose file...' }}
+                          </span>
+                        </label>
+                      } @else {
+                        <span class="ti-ro">
+                          {{ asGroup(documentArray.at(i)).get('fileName')?.value }}
                         </span>
-                      </label>
+                      }
                     </td>
                     <td><input type="date" class="ti" formControlName="uploadDate"></td>
                     <td>
                       <input type="text" class="ti w60" formControlName="uploadedFileExtention"
                              maxlength="10" [readonly]="true">
                     </td>
-                    <td class="th-act text-center">
-                      <button type="button" class="btn-rm" (click)="documentArray.removeAt(i)">
-                        <i class="bi bi-x-lg"></i>
-                      </button>
-                    </td>
+                    @if (!isReadonly()) {
+                      <td class="th-act text-center">
+                        <button type="button" class="btn-rm" (click)="documentArray.removeAt(i)">
+                          <i class="bi bi-x-lg"></i>
+                        </button>
+                      </td>
+                    }
                   </tr>
                 }
               </tbody>
@@ -473,7 +543,9 @@
         <div class="section-block">
           <div class="section-header d-flex align-items-center justify-content-between">
             <span>Professional Certifications</span>
-            <button type="button" class="btn-add-row" (click)="addCertification()">Add Row</button>
+            @if (!isReadonly()) {
+              <button type="button" class="btn-add-row" (click)="addCertification()">Add Row</button>
+            }
           </div>
           <div class="table-wrap">
             <table class="detail-table w-100">
@@ -485,14 +557,15 @@
                   <th>LOCATION <span class="req">*</span></th>
                   <th>FROM DATE <span class="req">*</span></th>
                   <th>TO DATE</th>
-                  <th class="th-act"></th>
+                  @if (!isReadonly()) { <th class="th-act"></th> }
                 </tr>
               </thead>
               <tbody formArrayName="employeeProfessionalCertifications">
                 @if (certificationArray.length === 0) {
                   <tr>
-                    <td colspan="7" class="empty-row">
-                      No certifications. Click 'Add Row' to add.
+                    <td [attr.colspan]="isReadonly() ? 6 : 7" class="empty-row">
+                      No certifications.
+                      @if (!isReadonly()) { Click 'Add Row' to add. }
                     </td>
                   </tr>
                 }
@@ -516,14 +589,23 @@
                     </td>
                     <td>
                       <input type="date" class="ti" formControlName="fromDate"
-                             [class.ti-err]="tblErr(certificationArray, i, 'fromDate')">
+                             [class.ti-err]="tblErr(certificationArray, i, 'fromDate') ||
+                               asGroup(certificationArray.at(i)).hasError('dateRangeInvalid')">
                     </td>
-                    <td><input type="date" class="ti" formControlName="toDate"></td>
-                    <td class="th-act text-center">
-                      <button type="button" class="btn-rm" (click)="certificationArray.removeAt(i)">
-                        <i class="bi bi-x-lg"></i>
-                      </button>
+                    <td>
+                      <input type="date" class="ti" formControlName="toDate"
+                             [class.ti-err]="asGroup(certificationArray.at(i)).hasError('dateRangeInvalid')">
+                      @if (asGroup(certificationArray.at(i)).hasError('dateRangeInvalid')) {
+                        <div class="err-msg">To date must be after From date</div>
+                      }
                     </td>
+                    @if (!isReadonly()) {
+                      <td class="th-act text-center">
+                        <button type="button" class="btn-rm" (click)="certificationArray.removeAt(i)">
+                          <i class="bi bi-x-lg"></i>
+                        </button>
+                      </td>
+                    }
                   </tr>
                 }
               </tbody>
@@ -532,8 +614,7 @@
         </div>
       </div>
 
-    </div><!-- /row docs+certs -->
+    </div>
 
-  </div><!-- /form-body -->
+  </div>
 </div>
-

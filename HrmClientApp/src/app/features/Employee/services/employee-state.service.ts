@@ -1,5 +1,5 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { EmployeeDto, EmployeeListDto, FormMode } from '../models/employee.models';
+import { EmployeeDto, EmployeeListDto, FormMode, PageStatus } from '../models/employee.models';
 import { EmployeeApiService } from './employee-api.service';
 
 import { environment } from '../../../../environments/environment';
@@ -7,15 +7,17 @@ import { ToastService } from '../../../shared/services/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class EmployeeStateService {
-  private api = inject(EmployeeApiService);
+  private api   = inject(EmployeeApiService);
   private toast = inject(ToastService);
 
-  readonly employeeList = signal<EmployeeListDto[]>([]);
+  readonly employeeList     = signal<EmployeeListDto[]>([]);
   readonly selectedEmployee = signal<EmployeeDto | null>(null);
-  readonly mode = signal<FormMode>('add');
-  readonly loading = signal(false);
-  readonly saving = signal(false);
-  readonly searchQuery = signal('');
+  readonly mode             = signal<FormMode>('disabled');
+  readonly status           = signal<PageStatus>('idle');
+  readonly searchQuery      = signal('');
+
+  readonly loading = computed(() => this.status() === 'loading');
+  readonly saving  = computed(() => this.status() === 'saving');
 
   readonly filteredList = computed(() => {
     const q = this.searchQuery().toLowerCase();
@@ -27,86 +29,93 @@ export class EmployeeStateService {
   });
 
   loadList(): void {
-    this.loading.set(true);
+    this.status.set('loading');
     this.api.getEmployeeList().subscribe({
-      next: list => { this.employeeList.set(list); this.loading.set(false); },
-      error: () => { this.toast.error('Failed to load employee list'); this.loading.set(false); }
+      next: list => { this.employeeList.set(list); this.status.set('idle'); },
+      error: ()   => { this.toast.error('Failed to load employee list'); this.status.set('error'); }
     });
   }
 
   selectEmployee(id: number): void {
-    this.loading.set(true);
+    this.status.set('loading');
     this.api.getEmployeeDetails(id).subscribe({
       next: emp => {
-        this.mode.set('edit');
-        this.selectedEmployee.set(emp);   // set AFTER mode so effect sees correct mode
-        this.loading.set(false);
+        this.selectedEmployee.set(emp);
+        this.mode.set('view');
+        this.status.set('idle');
       },
-      error: () => { this.toast.error('Failed to load employee details'); this.loading.set(false); }
+      error: () => { this.toast.error('Failed to load employee details'); this.status.set('error'); }
     });
   }
 
-  startNew(): void {
+  // FIX: set null first, then mode — effect fires once with mode=add, emp=null
+  startAdd(): void {
+    this.selectedEmployee.set(null);
     this.mode.set('add');
-    this.selectedEmployee.set({
-      idClient: environment.idClient,
-      employeeName: null,
-      idDepartment: 0,
-      idSection: 0,
-      isActive: true,
-      
-    employeeNameBangla: null,
-    employeeImage: null,
+  }
 
-    fatherName: null,
-    motherName: null,
+  startEdit(): void {
+    this.mode.set('edit');
+  }
 
-    idReportingManager: null,
-    idJobType: null,
-    idEmployeeType: null,
+  cancelAdd(): void {
+    const prev = this.selectedEmployee();
+    if (prev?.id) {
+      this.selectEmployee(prev.id);
+    } else {
+      this.mode.set('disabled');
+      this.selectedEmployee.set(null);
+    }
+  }
 
-    birthDate: null,
-    joiningDate: null,
+  cancelWithRemove(): void{
+       const prev = this.selectedEmployee();
+    if (prev?.id) {
+      this.selectEmployee(prev.id);
+    } else {
+      this.mode.set('disabled');
+      this.selectedEmployee.set(null);
+    }
+  }
 
-    idGender: null,
-    idReligion: null,
-
-
-    idDesignation: null,
-
-    hasOvertime: false,
-    hasAttendenceBonus: false,
-    idWeekOff: null,
-
-    address: null,
-    presentAddress: null,
-    nationalIdentificationNumber: null,
-    contactNo: null,
-
-    idMaritalStatus: null,
-
-      employeeDocuments: [],
-      employeeEducationInfos: [],
-      employeeFamilyInfos: [],
-      employeeProfessionalCertifications: []
-    });
+  cancelEdit(): void {
+    const prev = this.selectedEmployee();
+    if (prev?.id) {
+      this.selectEmployee(prev.id);
+    } else {
+      this.mode.set('disabled');
+      this.selectedEmployee.set(null);
+    }
   }
 
   save(dto: EmployeeDto): void {
-    this.saving.set(true);
+    this.status.set('saving');
     const isEdit = this.mode() === 'edit' && !!dto.id;
-    const call = isEdit? this.api.updateEmployee(dto.id!, dto) : this.api.addEmployee(dto);
+    const call   = isEdit
+      ? this.api.updateEmployee(dto.id!, dto)
+      : this.api.addEmployee(dto);
 
     call.subscribe({
-      next: () => {
+      next: (res: any) => {
         this.toast.success(isEdit ? 'Employee updated successfully' : 'Employee added successfully');
-        this.saving.set(false);
+        this.status.set('idle');
         this.loadList();
-        if (!isEdit) this.startNew();
+        if (isEdit) {
+          this.selectEmployee(dto.id!);
+        } else {
+          const newId = res?.employeeId ?? 0;
+          if (newId) {
+            console.log(newId)
+            this.selectEmployee(newId);
+          } else {
+            this.mode.set('disabled');
+            this.selectedEmployee.set(null);
+          }
+        }
       },
       error: () => {
         this.toast.error('Failed to save employee. Please try again.');
-        this.saving.set(false);
+        this.status.set('error');
       }
     });
   }
@@ -116,11 +125,10 @@ export class EmployeeStateService {
       next: () => {
         this.toast.success('Employee deleted');
         this.employeeList.update(list => list.filter(e => e.id !== id));
-        if (this.selectedEmployee()?.id === id) this.startNew(); //return true
+        this.mode.set('disabled');
+        this.selectedEmployee.set(null);
       },
       error: () => this.toast.error('Failed to delete employee')
     });
   }
-
-  reset(): void { this.startNew(); }
 }

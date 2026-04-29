@@ -22,13 +22,7 @@ export class EmployeeListComponent implements OnInit {
   }
 
   addNew() {
-    this.employeeService.startNew();
+    this.employeeService.startAdd(); // ← was startNew(), renamed to startAdd()
   }
 
- 
-
-  getInitials(name: string | null): string {
-    if (!name) return '?';
-    return name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-  }
 }
