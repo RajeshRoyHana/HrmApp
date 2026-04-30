@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, AbstractControl, Validators, ValidatorFn, ValidationErrors, FormControl } from '@angular/forms';
 import { environment } from '../../../../../../environments/environment';
 import { DropdownService } from '../../../../../shared/services/dropdown.service';
@@ -30,7 +30,7 @@ export class EmployeeFormComponent implements OnInit {
   private readonly _tick = signal(0);
   @ViewChild('employeeImageInput') employeeImageInput!: ElementRef<HTMLInputElement>;
 
-  // FIX: track last mode to prevent double-fire of effect
+
   private lastMode = '';
 
   readonly isDisabled = computed(() => this.employeeService.mode() === 'disabled');
@@ -74,75 +74,27 @@ export class EmployeeFormComponent implements OnInit {
          this.addDocument();
          this.addFamily();
         this.form.enable();
+        this.form.markAllAsTouched();
        
       } else if (mode === 'edit' && emp) {
-        this.form.enable();
-   
         this.updatePatchForm(emp);
-        
-
+        setTimeout(() => {
+           this.form.enable();
+        });
+       
       } else if (mode === 'view' && emp) {
-       this.patchForm(emp);
-       setTimeout(() => {
-        this.form.disable();
-        //this.disableAllFormArray();
-       }, 350); 
-        
-        
-      } else if (mode === 'disabled') {
+          
+          setTimeout(() =>{
+             this.form.disable();
+          }, 0)
+         this.patchForm(emp);
+
+      } 
+      else if (mode === 'disabled') {
         this.clearForm();
         this.form.disable();
-          setTimeout(() => {
-        this.disableAllFormArray();
-       }, 350); 
       }
     });
-
-//     effect(() => {
-//   const mode = this.employeeService.mode();
-//   const emp  = this.employeeService.selectedEmployee();
-
-//   if (mode === 'add' && this.lastMode === 'add') return;
-//   this.lastMode = mode;
-
-//   if (mode === 'add') {
-//     this.clearForm();
-
-//     this.addEducation();
-//     this.addCertification();
-//     this.addDocument();
-//     this.addFamily();
-
-//     this.form.enable({ emitEvent: false });
-//     this.setDetailArraysState(true);
-
-//   } else if (mode === 'edit' && emp) {
-//     this.patchForm(emp);
-
-//     this.form.enable({ emitEvent: false });
-    
-//  this.form.enable({ emitEvent: false });
-//   this.patchForm(emp);
-
-//   this.familyArray.enable({ emitEvent: false });
-//   this.educationArray.enable({ emitEvent: false });
-//   this.documentArray.enable({ emitEvent: false });
-//   this.certificationArray.enable({ emitEvent: false });
-
-
-//   } else if (mode === 'view' && emp) {
-//     this.patchForm(emp);
-
-//     this.form.disable({ emitEvent: false });
-//     this.setDetailArraysState(false);
-
-//   } else if (mode === 'disabled') {
-//     this.clearForm();
-
-//     this.form.disable({ emitEvent: false });
-//     this.setDetailArraysState(false);
-//   }
-// });
 
   }
 
@@ -191,7 +143,7 @@ export class EmployeeFormComponent implements OnInit {
       address:                      ['', Validators.maxLength(250)],
       presentAddress:               ['', Validators.maxLength(250)],
       nationalIdentificationNumber: ['', [Validators.maxLength(30), Validators.pattern('^[0-9]*$')]],
-      contactNo:                    ['', [Validators.maxLength(16), Validators.pattern(/^\+?[1-9]\d{1,14}$/)]],
+      contactNo:                    ['', [Validators.maxLength(16), Validators.pattern(/^\+?\d{1,16}$/)]],// phoneno make problem with this pattern
       idMaritalStatus:              [null],
       isActive:                     [true],
       createdBy:                    [''],
@@ -205,36 +157,9 @@ export class EmployeeFormComponent implements OnInit {
     this.form.disable();
   }
 
-  enableAllFormArray(){
-    [
-    this.familyArray,
-    this.educationArray,
-    this.documentArray,
-    this.certificationArray
-  ].forEach(arr => {
-    arr.enable({ emitEvent: false });
-    arr.controls.forEach(ctrl => {
-      ctrl.enable({ emitEvent: false });
-    });
-    arr.updateValueAndValidity({ emitEvent: false });
-  });
- 
-  }
-  disableAllFormArray()
- {
-  [
-    this.familyArray,
-    this.educationArray,
-    this.documentArray,
-    this.certificationArray
-  ].forEach(arr => {
-    arr.disable({ emitEvent: false });
-    arr.controls.forEach(ctrl => {
-      ctrl.disable({ emitEvent: false });
-    });
-    arr.updateValueAndValidity({ emitEvent: false });
-  });
-}
+  
+
+
 
 
   // FIX: clearForm only resets — never adds any rows
@@ -294,7 +219,8 @@ export class EmployeeFormComponent implements OnInit {
       birthDate:   emp.birthDate?.substring(0, 10)   ?? null,
       joiningDate: emp.joiningDate?.substring(0, 10) ?? null,
     });
-    setTimeout(()=>{ emp.employeeFamilyInfos?.forEach(f => this.familyArray.push(this.fb.group({
+
+   emp.employeeFamilyInfos?.forEach(f => this.familyArray.push(this.fb.group({
       id: [f.id], idEmployee: [f.idEmployee],
       name:             [f.name, [Validators.required, Validators.maxLength(50)]],
       idRelationship:   [f.idRelationship, Validators.required],
@@ -303,9 +229,9 @@ export class EmployeeFormComponent implements OnInit {
       contactNo:        [f.contactNo, Validators.maxLength(50)],
       currentAddress:   [f.currentAddress, Validators.maxLength(500)],
       permanentAddress: [f.permanentAddress, Validators.maxLength(500)],
-    }))); });
+    }))); 
     
-    setTimeout(() => {
+
        emp.employeeEducationInfos?.forEach(e => this.educationArray.push(this.fb.group({
       id: [e.id], idEmployee: [e.idEmployee],
       idEducationLevel:       [e.idEducationLevel, Validators.required],
@@ -318,9 +244,9 @@ export class EmployeeFormComponent implements OnInit {
       cgpa: [e.cgpa], examScale: [e.examScale], marks: [e.marks],
       duration: [e.duration], achievement: [e.achievement, Validators.maxLength(500)],
     })));
-    });
+
    
-     setTimeout(() => {
+
        emp.employeeDocuments?.forEach(d => this.documentArray.push(this.fb.group({
       id: [d.id], idEmployee: [d.idEmployee],
       documentName:          [d.documentName, [Validators.required, Validators.maxLength(200)]],
@@ -329,11 +255,8 @@ export class EmployeeFormComponent implements OnInit {
       uploadedFileExtention: [d.uploadedFileExtention, Validators.maxLength(10)],
       uploadedFile:          [d.uploadedFile],
     })));
-    });
 
-   
 
-     setTimeout(() => {
          emp.employeeProfessionalCertifications?.forEach(c => this.certificationArray.push(this.fb.group({
       id: [c.id], idEmployee: [c.idEmployee],
       certificationTitle:     [c.certificationTitle, [Validators.required, Validators.maxLength(255)]],
@@ -342,7 +265,7 @@ export class EmployeeFormComponent implements OnInit {
       fromDate: [c.fromDate?.substring(0, 10), Validators.required],
       toDate:   [c.toDate?.substring(0, 10) ?? null],
     }, { validators: this.dateRangeValidator })));
-    });
+  
  
   }
    private updatePatchForm(emp: EmployeeDto) {
@@ -362,7 +285,8 @@ export class EmployeeFormComponent implements OnInit {
       birthDate:   emp.birthDate?.substring(0, 10)   ?? null,
       joiningDate: emp.joiningDate?.substring(0, 10) ?? null,
     });
-    emp.employeeFamilyInfos?.forEach(f => this.familyArray.push(this.fb.group({
+    setTimeout(()=>{
+          emp.employeeFamilyInfos?.forEach(f => this.familyArray.push(this.fb.group({
       id: [f.id], idEmployee: [f.idEmployee],
       name:             [f.name, [Validators.required, Validators.maxLength(50)]],
       idRelationship:   [f.idRelationship, Validators.required],
@@ -372,9 +296,10 @@ export class EmployeeFormComponent implements OnInit {
       currentAddress:   [f.currentAddress, Validators.maxLength(500)],
       permanentAddress: [f.permanentAddress, Validators.maxLength(500)],
     })));
+        });
     
-  
-       emp.employeeEducationInfos?.forEach(e => this.educationArray.push(this.fb.group({
+        setTimeout(()=>{
+ emp.employeeEducationInfos?.forEach(e => this.educationArray.push(this.fb.group({
       id: [e.id], idEmployee: [e.idEmployee],
       idEducationLevel:       [e.idEducationLevel, Validators.required],
       idEducationExamination: [e.idEducationExamination, Validators.required],
@@ -386,9 +311,9 @@ export class EmployeeFormComponent implements OnInit {
       cgpa: [e.cgpa], examScale: [e.examScale], marks: [e.marks],
       duration: [e.duration], achievement: [e.achievement, Validators.maxLength(500)],
     })));
-
-   
-
+        })
+      
+setTimeout(()=>{
        emp.employeeDocuments?.forEach(d => this.documentArray.push(this.fb.group({
       id: [d.id], idEmployee: [d.idEmployee],
       documentName:          [d.documentName, [Validators.required, Validators.maxLength(200)]],
@@ -397,10 +322,9 @@ export class EmployeeFormComponent implements OnInit {
       uploadedFileExtention: [d.uploadedFileExtention, Validators.maxLength(10)],
       uploadedFile:          [d.uploadedFile],
     })));
+        });
 
-   
-
-  
+        setTimeout(()=>{
          emp.employeeProfessionalCertifications?.forEach(c => this.certificationArray.push(this.fb.group({
       id: [c.id], idEmployee: [c.idEmployee],
       certificationTitle:     [c.certificationTitle, [Validators.required, Validators.maxLength(255)]],
@@ -409,7 +333,7 @@ export class EmployeeFormComponent implements OnInit {
       fromDate: [c.fromDate?.substring(0, 10), Validators.required],
       toDate:   [c.toDate?.substring(0, 10) ?? null],
     }, { validators: this.dateRangeValidator })));
-
+        });
  
   }
 
@@ -423,11 +347,6 @@ export class EmployeeFormComponent implements OnInit {
   }
 
 
-
-
-
-
-
   // ── Add row helpers ───────────────────────────────────────────
   addFamily() {
     this.familyArray.push(this.fb.group({
@@ -436,7 +355,7 @@ export class EmployeeFormComponent implements OnInit {
       idRelationship:   ['', Validators.required],
       idGender:         ['', Validators.required],
       dateOfBirth:      [null],
-      contactNo:        ['', [Validators.maxLength(16), Validators.pattern(/^\+?[1-9]\d{1,14}$/)]],
+      contactNo:        ['', [Validators.maxLength(16),Validators.pattern(/^\+?\d{1,16}$/)]],
       currentAddress:   ['', Validators.maxLength(500)],
       permanentAddress: ['', Validators.maxLength(500)],
     }));
@@ -455,7 +374,7 @@ export class EmployeeFormComponent implements OnInit {
       isForeignInstitute: [false],
       cgpa: [null], examScale: [null], marks: [null], duration: [null],
       achievement: ['', Validators.maxLength(500)],
-    }));
+    }, { validators: this.cgpaScaleValidator }));
     this._tick.update(v => v + 1);
   }
 
@@ -507,6 +426,24 @@ export class EmployeeFormComponent implements OnInit {
     this.imagePreview.set(`data:${baseFile.mimeType};base64,${baseFile.base64}`);
   }
 
+  private cgpaScaleValidator(group: AbstractControl) {
+  const cgpa = group.get('cgpa')?.value;
+  const scale = group.get('examScale')?.value;
+
+  // allow empty values
+  if (cgpa === null || cgpa === '' || scale === null || scale === '') {
+    return null;
+  }
+
+  const cgpaNum = Number(cgpa);
+  const scaleNum = Number(scale);
+
+  if (isNaN(cgpaNum) || isNaN(scaleNum)) {
+    return null;
+  }
+
+  return cgpaNum > scaleNum ? { cgpaGreaterThanScale: true } : null;
+}
 
   // ── Toolbar actions ───────────────────────────────────────────
   onClickAdd()  { 
@@ -538,13 +475,14 @@ export class EmployeeFormComponent implements OnInit {
 
   // ── Save ─────────────────────────────────────────────────────
   onSave() {
+    const r = this.form.value;
     if(this.form.invalid){  this.toast.warning('Please fill all required fields.');return;}
     ['employeeName', 'idDepartment', 'idSection'].forEach(key =>
       this.form.get(key)?.markAsTouched()
     );
 
 
-    const r = this.form.getRawValue();
+
     const masterInvalid =
       !r.employeeName?.toString().trim() ||
       !r.idDepartment ||
@@ -601,3 +539,6 @@ export class EmployeeFormComponent implements OnInit {
     };
   }
 }
+
+
+

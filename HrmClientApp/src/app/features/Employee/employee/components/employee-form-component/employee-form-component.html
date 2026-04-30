@@ -266,7 +266,7 @@
 
           </div>
 
-          <div class="col-12">
+          <div class="col-lg-3 col-md-6" style="margin-top: 31px;">
             <div class="d-flex align-items-center gap-4 flex-wrap pt-1">
               <label class="toggle-label">
                 <input type="radio" formControlName="hasOvertime" [value]="true">
@@ -276,12 +276,12 @@
                 <input type="checkbox" formControlName="hasAttendenceBonus">
                 <span>Attendance Bonus</span>
               </label>
-              <label class="toggle-label switch-label">
+              <!-- <label class="toggle-label switch-label">
                 <div class="form-check form-switch mb-0">
                   <input class="form-check-input" type="checkbox" formControlName="isActive">
                   <span class="ms-1">Active</span>
                 </div>
-              </label>
+              </label> -->
             </div>
           </div>
 
@@ -327,7 +327,7 @@
                 <td>
                   <input type="text" class="ti" formControlName="name"
                          maxlength="50" placeholder="Full name"
-                         [class.ti-err]="tblErr(familyArray, i, 'name')">
+                         [class.ti-err]="tblErr(familyArray, i, 'name')" >
                 </td>
                 <td>
                   <select class="ts" formControlName="idGender"
@@ -348,7 +348,19 @@
                   </select>
                 </td>
                 <td><input type="date" class="ti" formControlName="dateOfBirth"></td>
-                <td><input type="text" class="ti" formControlName="contactNo" maxlength="50"></td>
+                <td>
+              <input type="tel" class="ti" formControlName="contactNo" 
+                     maxlength="16" placeholder="">
+              @if (tblErr(familyArray, i, 'contactNo')) {
+                <div class="err-msg">
+                  @if (familyArray.at(i).get('contactNo')?.errors?.['pattern']) {
+                    Valid phone number (digits only, max 16, optional +)
+                  } @else if (familyArray.at(i).get('contactNo')?.errors?.['maxlength']) {
+                    Max 16 characters
+                  }
+                </div>
+              }
+            </td>
                 <td><input type="text" class="ti" formControlName="currentAddress" maxlength="500"></td>
                 <td><input type="text" class="ti" formControlName="permanentAddress" maxlength="500"></td>
                 @if (!isReadonly() || !isView) {
@@ -447,7 +459,19 @@
                          maxlength="250"
                          [class.ti-err]="tblErr(educationArray, i, 'instituteName')">
                 </td>
-                <td><input type="number" class="ti w70" formControlName="cgpa" step="0.01"></td>
+                                
+                <td>
+                  <input type="number"
+                        class="ti w70"
+                        formControlName="cgpa"
+                        step="0.01"
+                        [class.ti-err]="asGroup(educationArray.at(i)).hasError('cgpaGreaterThanScale')">
+
+                  @if (asGroup(educationArray.at(i)).hasError('cgpaGreaterThanScale')) {
+                    <div class="err-msg">CGPA cannot be greater than scale</div>
+                  }
+                </td>
+
                 <td><input type="number" class="ti w70" formControlName="examScale" step="0.01"></td>
                 <td><input type="number" class="ti w70" formControlName="marks"></td>
                 <td class="text-center">
@@ -585,7 +609,7 @@
                     <td>
                       <input type="text" class="ti" formControlName="certificationTitle"
                              maxlength="255"
-                             [class.ti-err]="tblErr(certificationArray, i, 'certificationTitle')">
+                             [class.ti-err]="tblErr(certificationArray, i, 'certificationTitle')" >
                     </td>
                     <td>
                       <input type="text" class="ti" formControlName="certificationInstitute"

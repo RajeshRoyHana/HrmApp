@@ -62,7 +62,6 @@ public class EmployeeDto
     public string? NationalIdentificationNumber { get; set; }
 
     [StringLength(250)]
-    [Phone]
     public string? ContactNo { get; set; }
 
     public int? IdMaritalStatus { get; set; }

@@ -3,7 +3,6 @@ using HrmApp.Services.DataContext;
 using HrmApp.Services.Interfaces;
 using HrmApp.Shared.Dtos;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace HrmApp.Services
 {
@@ -27,7 +26,7 @@ namespace HrmApp.Services
                     IdClient = e.IdClient,
                     EmployeeName = e.EmployeeName,
                     DesignationName = e.Designation != null ? e.Designation.DesignationName : "N/A"
-                }).OrderBy(e=>e.Id)
+                }).OrderBy(e => e.Id)
                 .ToListAsync(cancellationToken);
 
             return data;
@@ -45,7 +44,7 @@ namespace HrmApp.Services
                     EmployeeNameBangla = employee.EmployeeNameBangla,
                     FatherName = employee.FatherName,
                     MotherName = employee.MotherName,
-                    EmployeeImage = (employee.EmployeeImage != null && employee.EmployeeImage.Length > 0) ?  Convert.ToBase64String(employee.EmployeeImage) : null,
+                    EmployeeImage = (employee.EmployeeImage != null && employee.EmployeeImage.Length > 0) ? Convert.ToBase64String(employee.EmployeeImage) : null,
                     IdReportingManager = employee.IdReportingManager,
                     IdJobType = employee.IdJobType,
                     IdEmployeeType = employee.IdEmployeeType,
@@ -166,7 +165,7 @@ namespace HrmApp.Services
                 NationalIdentificationNumber = dto.NationalIdentificationNumber,
                 ContactNo = dto.ContactNo,
                 IdMaritalStatus = dto.IdMaritalStatus,
-                IsActive = dto.IsActive ?? true,
+                IsActive = true,
 
             };
 
@@ -317,7 +316,7 @@ namespace HrmApp.Services
             employee.PresentAddress = dto.PresentAddress;
             employee.ContactNo = dto.ContactNo;
             employee.IdMaritalStatus = dto.IdMaritalStatus;
-            employee.IsActive = dto.IsActive ?? employee.IsActive;
+            employee.IsActive = true;
 
             // =========================================================
             // EMPLOYEE DOCUMENTS
@@ -351,7 +350,7 @@ namespace HrmApp.Services
                     {
                         existingDoc.DocumentName = doc.DocumentName;
                         existingDoc.FileName = doc.FileName;
-   
+
                         existingDoc.UploadedFile = !string.IsNullOrEmpty(doc.UploadedFile)
                         ? Convert.FromBase64String(doc.UploadedFile)
                         : existingDoc.UploadedFile;
